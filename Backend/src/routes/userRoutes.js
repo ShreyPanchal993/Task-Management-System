@@ -7,6 +7,5 @@ const router = express.Router();
 // User Management Routes
 router.get("/", protect, adminOnly, userController.getUsers); // Get all users (Admin only)
 router.get("/:id", protect, userController.getUserById); // Get user by ID
-router.delete("/:id", protect, adminOnly, userController.deleteUser); // Delete user (Admin only)
 
 export default router;

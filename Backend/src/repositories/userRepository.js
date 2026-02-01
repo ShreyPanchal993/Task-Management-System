@@ -26,18 +26,14 @@ const getUsers = async (userId) => {
 
 const getUserById = async (userId) => {
     try{
-        return await User.findById(userId);
+        const user = await User.findById(userId).select('-password');
+        if (!user){
+            throw new Error("User not found");
+        }
+        return user;
     } catch(error){
         throw new Error(error.message);
     }
 };
 
-const deleteUser = async (userId) => {
-    try{
-        return await User.findByIdAndDelete(userId);
-    } catch(error){
-        throw new Error(error.message);
-    }
-};
-
-export {getUsers, getUserById, deleteUser};
+export {getUsers, getUserById};

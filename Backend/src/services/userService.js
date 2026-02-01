@@ -7,11 +7,8 @@ const getUsers = async () => {
 };
 
 const getUserById = async (userId) => {
-    return await userRepository.getUserById(userId);
+    const user = await userRepository.getUserById(userId);
+    return user;
 };
 
-const deleteUser = async (userId) => {
-    return await userRepository.deleteUser(userId);
-};
-
-export {getUsers, getUserById, deleteUser};
+export {getUsers, getUserById};
