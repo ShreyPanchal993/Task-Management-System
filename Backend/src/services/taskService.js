@@ -79,7 +79,10 @@ const getDashboardData = async () => {
     return dashboardData;
 };
 
-const getUserDashboardData = async (user) => { };   
+const getUserDashboardData = async (userId) => { 
+    const dashboardData = await taskRepository.getUserDashboardData(userId);
+    return dashboardData;
+};   
 
 export { 
     getTasks, 

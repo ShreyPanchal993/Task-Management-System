@@ -134,7 +134,8 @@ const getDashboardData = async (req, res) => {
 
 const getUserDashboardData = async (req, res) => { 
     try {
-        const data = await taskService.getUserDashboardData(req.user);
+        const userId = req.user._id;
+        const data = await taskService.getUserDashboardData(userId);
         res.json(data);
     } catch (error) {
         res.status(500).json({ message:"Server error: ", error: error.message });

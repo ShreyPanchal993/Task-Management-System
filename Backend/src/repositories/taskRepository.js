@@ -152,7 +152,77 @@ const getDashboardData = async () => {
     };
 }; 
 
-const getUserDashboardData = async (user) => { };
+const getUserDashboardData = async (userId) => { 
+    try{
+        const totalTasks = await Task.countDocuments({ assignedTo: userId });
+        const pendingTasks = await Task.countDocuments({ assignedTo: userId, status: 'Pending' });
+        const completedTasks = await Task.countDocuments({ assignedTo: userId, status: 'Completed' });
+        const overdueTasks = await Task.countDocuments({
+            assignedTo: userId,
+            status: { $ne: 'Completed' },
+            dueDate: { $lt: new Date() },
+        });
+
+        const taskDistributionRaw = await Task.aggregate([
+            {
+                $match: { assignedTo: userId }
+            },
+            {
+                $group: {
+                    _id: '$status',
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskDistribution = TASK_STATUS.reduce((acc, status) => {
+            const formattedKey = status.replace(/\s+/g, '');
+            acc[formattedKey] = 
+                taskDistributionRaw.find(item => item._id === status)?.count || 0;
+            return acc;
+        }, {});
+        taskDistribution["All"] = totalTasks;
+
+        const taskPriorityLevelRaw = await Task.aggregate([
+            {
+                $match: { assignedTo: userId }
+            },
+            {
+                $group: {
+                    _id: '$priority',
+                    count: { $sum: 1 },
+                },
+            },
+        ]);
+
+        const taskPriorityLevel = TASK_PRIORITIES.reduce((acc, priority) => {
+            acc[priority] =
+                taskPriorityLevelRaw.find(item => item._id === priority)?.count || 0;
+            return acc;
+        }, {});
+
+        const recentTasks = await Task.find({ assignedTo: userId })
+            .sort({ createdAt: -1 })    
+            .limit(5)
+            .select('title status priority dueDate createdAt');
+
+        return { 
+            statistics:{
+                totalTasks,
+                pendingTasks,
+                completedTasks,
+                overdueTasks
+            },
+            charts: {
+                taskDistribution,
+                taskPriorityLevel
+            },
+            recentTasks
+        };
+    } catch (error) {
+        throw new Error('Error fetching user dashboard data: ' + error.message);
+    }; 
+}
 
 export { 
     getTasks, 
