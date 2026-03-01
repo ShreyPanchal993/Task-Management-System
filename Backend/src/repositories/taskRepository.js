@@ -67,8 +67,13 @@ const createTask = async (taskData) => {
     return newTask;
 };
 
-const updateTask = async (taskData) => { 
-    const updatedTask = await Task.findByIdAndUpdate(taskData._id, taskData, { new: true });
+const updateTask = async (taskData) => {
+    const assignedToIds = taskData.assignedTo?.map(user => user._id || user) || taskData.assignedTo;
+    const updatedTask = await Task.findByIdAndUpdate(
+        taskData._id, 
+        { ...taskData, assignedTo: assignedToIds }, 
+        { new: true }
+    ).populate('assignedTo', 'name email profilePicture');
     return updatedTask;
 };
 
@@ -77,16 +82,33 @@ const deleteTask = async (taskId) => {
     return deleted;
 };
 
-const updateTaskStatus = async (task) => { 
-    const updatedTask = await Task.findByIdAndUpdate(task._id, task, { new: true });
+const updateTaskStatus = async (task) => {
+    const assignedToIds = task.assignedTo.map(user => user._id || user);
+    const updatedTask = await Task.findByIdAndUpdate(
+        task._id, 
+        { 
+            status: task.status,
+            todoChecklist: task.todoChecklist,
+            progress: task.progress,
+            assignedTo: assignedToIds
+        }, 
+        { new: true }
+    ).populate('assignedTo', 'name email profilePicture');
     return updatedTask;
 };
 
 const updateTaskChecklist = async (task) => { 
-    const updatedTask = await Task.findByIdAndUpdate(task._id, task, { new: true }).populate(
-        'assignedTo', 
-        'name email profilePicture'
-    );
+    const assignedToIds = task.assignedTo.map(user => user._id || user);
+    const updatedTask = await Task.findByIdAndUpdate(
+        task._id, 
+        { 
+            todoChecklist: task.todoChecklist,
+            progress: task.progress,
+            status: task.status,
+            assignedTo: assignedToIds
+        }, 
+        { new: true }
+    ).populate('assignedTo', 'name email profilePicture');
 
     return updatedTask;
 };

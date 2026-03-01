@@ -33,12 +33,7 @@ const getAllTasks = async () => {
         });
     });
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=tasks-report.xlsx");
-
-    return workbook.xlsx.write(res).then(() => {
-        res.status(200).end();
-    });
+    return await workbook.xlsx.writeBuffer();
 };
 
 const getAllUsers = async () => {
@@ -91,14 +86,7 @@ const getAllUsers = async () => {
         worksheet.addRow(user);
     });
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=users-report.xlsx");
-
-    return workbook.xlsx.write(res).then(() => {
-        res.status(200).end();
-    });
-
-    return workbook;
+    return await workbook.xlsx.writeBuffer();
 }
 
 export { getAllTasks, getAllUsers };
