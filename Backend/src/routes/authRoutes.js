@@ -10,6 +10,10 @@ router.post("/register", authController.registerUser);
 
 router.post("/login", authController.loginUser);
 
+router.post("/logout", protect, authController.logoutUser);
+
+router.post("/refresh-token", authController.refreshToken);
+
 router
     .route("/profile")
     .get(protect, authController.getUserProfile)
