@@ -4,6 +4,8 @@ export const API_PATHS = {
     AUTH: {
         REGISTER: "/api/auth/register", // Register API endpoint
         LOGIN: "/api/auth/login", // Login API endpoint
+        LOGOUT: "/api/auth/logout", // Logout API endpoint
+        REFRESH_TOKEN: "/api/auth/refresh-token", // Refresh token API endpoint
         GET_PROFILE: "/api/auth/profile", // Get user profile API endpoint
     },
     
