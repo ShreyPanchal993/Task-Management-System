@@ -116,7 +116,7 @@ const Navbar = ({ activeMenu }) => {
 
                     <div>
                         <p className="soft-label hidden md:block">Workspace</p>
-                        <h2 className="text-lg font-semibold tracking-tight text-slate-900">Task Management</h2>
+                        <h2 className="text-lg font-semibold tracking-tight text-slate-900">Trackora</h2>
                     </div>
                 </div>
 

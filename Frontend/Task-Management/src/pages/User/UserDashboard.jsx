@@ -13,6 +13,7 @@ import TaskListTable from "../../components/TaskListTable";
 import CustomPieChart from "../../components/Charts/CustomPieChart";
 import CustomBarChart from "../../components/Charts/CustomBarChart";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const COLORS = ["#8D51FF", "#00B8DB", "#7BCE00"];
 
@@ -66,14 +67,14 @@ const UserDashboard = () => {
         prepareChartData(response.data.data?.charts || null);
       }
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      toast.error(error.response?.data?.message || "Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
   };
 
   const onSeeMore = () => {
-    navigate("/admin/tasks");
+    navigate("/user/tasks");
   };
 
   useEffect(() => {
