@@ -3,6 +3,8 @@ import logger from '../config/logger.js';
 import ApiSuccess from '../utils/ApiSuccess.js';
 import ApiError from '../utils/ApiError.js';
 
+const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+
 const getTasks = async (req, res) => {
     try {
         const { status } = req.query;
@@ -137,7 +139,7 @@ const updateTaskChecklist = async (req, res) => {
         }
 
         const isAssigned = task.assignedTo.some(user => user._id.toString() === req.user._id.toString());
-        if (!isAssigned && req.user.role !== 'admin') {
+        if (!isAssigned && !canManageAllTasks(req.user)) {
             const apiError = ApiError.forbidden("Unauthorized to update this task's checklist");
             return res.status(apiError.statusCode).json(apiError);
         }

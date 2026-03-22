@@ -6,3 +6,12 @@ export const userIdParamSchema = {
         id: objectIdSchema.required(),
     }),
 };
+
+export const updateUserRoleSchema = {
+    params: Joi.object({
+        id: objectIdSchema.required(),
+    }),
+    body: Joi.object({
+        role: Joi.string().valid("admin", "member").required(),
+    }),
+};

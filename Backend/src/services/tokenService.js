@@ -56,6 +56,3 @@ export const rotateRefreshToken = async (oldRefreshToken, newRefreshToken, userI
     return result;
 };
 
-export const roleDetermine = (adminInviteToken) => {
-    return adminInviteToken === process.env.ADMIN_INVITE_TOKEN ? "admin" : "member";
-};

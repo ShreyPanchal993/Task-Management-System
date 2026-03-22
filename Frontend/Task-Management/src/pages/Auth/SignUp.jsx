@@ -6,6 +6,7 @@ import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext";
 import uploadImage from "../../utils/uploadImage.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 const SignUp = () => {
   const [profilePicture, setProfilePicture] = useState(null);
@@ -13,7 +14,7 @@ const SignUp = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [adminInviteToken, setAdminInviteToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,6 @@ const SignUp = () => {
           email,
           password,
           profilePicture: uploadedImageUrl,
-          adminInviteToken: adminInviteToken || undefined,
         });
 
         let { user } = response.data.data;
@@ -79,7 +79,7 @@ const SignUp = () => {
           }
 
           updateUser(user);
-          navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+          navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
         }
       }catch (signupError) {
         setError(signupError.response?.data?.message || "Something went wrong. Please try again later.");
@@ -104,7 +104,7 @@ const SignUp = () => {
                   <HiCheckCircle className="text-2xl" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">TaskFlow</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">Trackora</p>
                   <h1 className="text-2xl font-semibold tracking-tight">A better-looking workflow</h1>
                 </div>
               </div>
@@ -172,25 +172,25 @@ const SignUp = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                    <input
-                      className="form-input mt-0"
-                      placeholder="Create a password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+                    <div className="password-input-shell mt-0">
+                      <input
+                        className="form-input password-input mt-0"
+                        placeholder="Create a password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle-btn"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <LuEye /> : <LuEyeOff />}
+                      </button>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Admin Token</label>
-                    <input
-                      className="form-input mt-0"
-                      placeholder="Optional"
-                      type="text"
-                      value={adminInviteToken}
-                      onChange={(e) => setAdminInviteToken(e.target.value)}
-                    />
-                  </div>
                 </div>
 
                 {error && (

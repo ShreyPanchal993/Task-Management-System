@@ -5,10 +5,12 @@ import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext.jsx";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,7 +43,7 @@ const Login = () => {
 
         if (user) {
           updateUser(user);
-          navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+          navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
         }
       }catch (loginError) {
         setError(loginError.response?.data?.message || "Something went wrong. Please try again later.");
@@ -69,7 +71,7 @@ const Login = () => {
                   <HiCheckCircle className="text-2xl" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">TaskFlow</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">Trackora</p>
                   <h1 className="text-2xl font-semibold tracking-tight">Control center for work</h1>
                 </div>
               </div>
@@ -109,13 +111,23 @@ const Login = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                  <input
-                    className="form-input mt-0"
-                    placeholder="Enter your password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <div className="password-input-shell mt-0">
+                    <input
+                      className="form-input password-input mt-0"
+                      placeholder="Enter your password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <LuEye /> : <LuEyeOff />}
+                    </button>
+                  </div>
                 </div>
 
                 {error && (

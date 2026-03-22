@@ -45,16 +45,14 @@ const normalizeUrl = (value, fieldName) => {
     return parsedUrl.toString();
 };
 
-export const normalizeUserInput = ({ name, email, profilePicture, adminInviteToken }) => {
+export const normalizeUserInput = ({ name, email, profilePicture }) => {
     assertNoHtml(name, "Name");
     assertNoHtml(email, "Email");
-    assertNoHtml(adminInviteToken, "Admin invite token");
 
     return {
         name: normalizeString(name),
         email: normalizeEmail(email),
         profilePicture: profilePicture ? normalizeUrl(profilePicture, "Profile picture") : "",
-        adminInviteToken: normalizeString(adminInviteToken),
     };
 };
 

@@ -6,6 +6,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import moment from 'moment';
 import AvatarGroup from '../../components/AvatarGroup';
 import { LuSquareArrowOutUpRight, LuX } from 'react-icons/lu';
+import toast from 'react-hot-toast';
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
@@ -35,7 +36,7 @@ const ViewTaskDetails = () => {
         setTask(taskInfo);
       }
     } catch (error) {
-      console.error("Error fetching task:", error);
+      toast.error(error.response?.data?.message || "Failed to load task details.");
     }
   };
 
