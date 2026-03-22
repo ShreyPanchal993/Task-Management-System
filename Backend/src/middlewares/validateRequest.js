@@ -28,7 +28,20 @@ export const validateRequest = (schemas = {}) => (req, res, next) => {
                 return res.status(apiError.statusCode).json(apiError);
             }
 
-            req[target] = value;
+            if (target === "body") {
+                req.body = value;
+                continue;
+            }
+
+            const requestTarget = req[target];
+
+            if (requestTarget && typeof requestTarget === "object") {
+                for (const key of Object.keys(requestTarget)) {
+                    delete requestTarget[key];
+                }
+
+                Object.assign(requestTarget, value);
+            }
         }
 
         next();

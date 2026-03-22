@@ -19,7 +19,11 @@ export const taskIdParamSchema = {
 
 export const getTasksQuerySchema = {
     query: Joi.object({
-        status: Joi.string().valid("Pending", "In Progress", "Completed", "").optional(),
+        status: Joi.string()
+            .trim()
+            .valid("Pending", "In Progress", "Completed")
+            .empty("")
+            .optional(),
     }),
 };
 
