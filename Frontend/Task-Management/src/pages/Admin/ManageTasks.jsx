@@ -38,7 +38,7 @@ const ManageTasks = () => {
 
       setTabs(statusArray);
     }catch (error) {
-      console.log("Error fetching tasks: ", error)
+      toast.error(error.response?.data?.message || "Failed to load tasks.");
     }
   };
 
@@ -62,7 +62,6 @@ const ManageTasks = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading expense details:", error);
       toast.error("Failed to download expense details. Please try again.");
     }
   };

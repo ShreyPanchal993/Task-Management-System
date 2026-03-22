@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosInstance.js';
 import { API_PATHS } from '../../utils/apiPaths.js';
 import Modal from '../Modal.jsx';
 import AvatarGroup from '../AvatarGroup.jsx';
+import toast from 'react-hot-toast';
 
 const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
     const [allUsers, setAllUsers] = useState([]);
@@ -13,10 +14,9 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
     const getAllUsers = async () => {
         try {
             const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
-            console.log('Users response:', response.data);
             setAllUsers(response.data?.data || []);
         } catch (error) {
-            console.error("Error fetching users:", error);
+            toast.error(error.response?.data?.message || "Failed to load users.");
         }
     };
 

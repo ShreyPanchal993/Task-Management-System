@@ -1,13 +1,15 @@
 import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
 
+const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+
 const getTasks = async (user, filter = {}) => { 
-    const baseFilter = user.role === 'admin' ? filter : { ...filter, assignedTo: user._id };
+    const baseFilter = canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };
 
     const [tasksRaw, statusCounts] = await Promise.all([
         Task.find(baseFilter).populate('assignedTo', 'name email profilePicture').lean(),
         Task.aggregate([
-            { $match: user.role === 'admin' ? {} : { assignedTo: user._id } },
+            { $match: canManageAllTasks(user) ? {} : { assignedTo: user._id } },
             { $group: { _id: '$status', count: { $sum: 1 } } }
         ])
     ]);

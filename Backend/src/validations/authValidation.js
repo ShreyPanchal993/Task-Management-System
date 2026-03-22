@@ -6,7 +6,6 @@ export const registerSchema = {
         email: Joi.string().trim().email().max(255).required(),
         password: Joi.string().min(8).max(128).required(),
         profilePicture: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("").optional(),
-        adminInviteToken: Joi.string().trim().max(100).allow("").optional(),
     }),
 };
 

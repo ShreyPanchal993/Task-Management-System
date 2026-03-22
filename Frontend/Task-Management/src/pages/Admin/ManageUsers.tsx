@@ -1,20 +1,46 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layouts/DashboardLayout'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 import UserCard from '../../components/Cards/UserCard';
 import toast from 'react-hot-toast';
+import { UserContext } from '../../context/userContext';
 
 const ManageUsers = () => {
+  const { user: currentUser } = useContext(UserContext);
   const [allUsers, setAllUsers] = useState([]);
+  const [roleUpdateId, setRoleUpdateId] = useState(null);
   
   const getAllUsers = async () => {
     try{
       const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
       setAllUsers(response.data?.data || []);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      toast.error(error.response?.data?.message || "Failed to load users.");
+    }
+  };
+
+  const handleRoleChange = async (userId, role) => {
+    const targetUser = allUsers.find((item) => item._id === userId);
+    if (!targetUser || targetUser.role === role) {
+      return;
+    }
+
+    setRoleUpdateId(userId);
+
+    try {
+      const response = await axiosInstance.patch(API_PATHS.USERS.UPDATE_USER_ROLE(userId), { role });
+      const updatedUser = response.data?.data;
+
+      setAllUsers((prevUsers) =>
+        prevUsers.map((item) => (item._id === updatedUser._id ? { ...item, ...updatedUser } : item))
+      );
+      toast.success(`User role updated to ${role.replace("_", " ")}.`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update user role.");
+    } finally {
+      setRoleUpdateId(null);
     }
   };
 
@@ -34,7 +60,6 @@ const ManageUsers = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading expense details:", error);
       toast.error("Failed to download expense details. Please try again.");
     }
   }
@@ -61,9 +86,14 @@ const ManageUsers = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {allUsers?.map((user, index) => (
-            <div key={user._id} className="animate-scale-in" style={{animationDelay: `${index * 0.05}s`}}>
-              <UserCard userInfo={user}/>
+          {allUsers?.map((teamMember, index) => (
+            <div key={teamMember._id} className="animate-scale-in" style={{animationDelay: `${index * 0.05}s`}}>
+              <UserCard
+                userInfo={teamMember}
+                canManageRoles={currentUser?.role === "super_admin"}
+                isUpdatingRole={roleUpdateId === teamMember._id}
+                onRoleChange={handleRoleChange}
+              />
             </div>
           ))}
         </div>

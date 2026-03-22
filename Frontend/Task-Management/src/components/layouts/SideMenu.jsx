@@ -24,17 +24,15 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
     const handleLogout = async () => {
         try {
             await axiosInstance.post(API_PATHS.AUTH.LOGOUT);
-        } catch (error) {
-            console.error('Logout error:', error);
         } finally {
             clearUser();
-            navigate("/login");
+            navigate("/");
         }
     };
 
     useEffect(() => {
         if (user) {
-            setSideMenuData(user?.role === "admin" ? SIDE_MENU_DATA : SIDE_MENU_USER_DATA);
+            setSideMenuData(user?.role === "admin" || user?.role === "super_admin" ? SIDE_MENU_DATA : SIDE_MENU_USER_DATA);
         }
     }, [user]);
 
@@ -70,12 +68,12 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
 
                 {!isCollapsed && (
                     <>
-                        {user?.role === "admin" && (
+                        {(user?.role === "admin" || user?.role === "super_admin") && (
                             <div
                                 className="text-[10px] font-semibold text-white px-3 py-1 rounded-full mt-2"
                                 style={{ background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)' }}
                             >
-                                Admin
+                                {user?.role === "super_admin" ? "Super Admin" : "Admin"}
                             </div>
                         )}
 
