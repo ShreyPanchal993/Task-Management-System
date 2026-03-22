@@ -13,6 +13,8 @@ export const objectIdSchema = Joi.string().hex().length(24);
 
 export const validateRequest = (schemas = {}) => (req, res, next) => {
     try {
+        req.validated = req.validated || {};
+
         for (const target of requestTargets) {
             const schema = schemas[target];
 
@@ -30,18 +32,9 @@ export const validateRequest = (schemas = {}) => (req, res, next) => {
 
             if (target === "body") {
                 req.body = value;
-                continue;
             }
 
-            const requestTarget = req[target];
-
-            if (requestTarget && typeof requestTarget === "object") {
-                for (const key of Object.keys(requestTarget)) {
-                    delete requestTarget[key];
-                }
-
-                Object.assign(requestTarget, value);
-            }
+            req.validated[target] = value;
         }
 
         next();
