@@ -5,7 +5,6 @@ import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext";
 import uploadImage from "../../utils/uploadImage.js";
-import { tokenStore } from "../../utils/tokenStore.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 
 const SignUp = () => {
@@ -24,6 +23,7 @@ const SignUp = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+
     if (file) {
       setProfilePicture(file);
       setPreviewUrl(URL.createObjectURL(file));
@@ -54,11 +54,6 @@ const SignUp = () => {
       setIsLoading(true);
   
       try{
-        if(profilePicture){
-          const imageUploadRes = await uploadImage(profilePicture);
-          uploadedImageUrl = imageUploadRes.url;
-        }
-
         const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
           name: fullName,
           email,
@@ -67,105 +62,85 @@ const SignUp = () => {
           adminInviteToken: adminInviteToken || undefined,
         });
 
-        const { token, user } = response.data.data;
+        let { user } = response.data.data;
 
-        if (token) {
-          tokenStore.set(token);
+        if (user) {
+          if (profilePicture) {
+            const imageUploadRes = await uploadImage(profilePicture);
+            uploadedImageUrl = imageUploadRes.url;
+
+            const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
+              name: fullName,
+              email,
+              profilePicture: uploadedImageUrl,
+            });
+
+            user = profileUpdateResponse.data.data;
+          }
+
           updateUser(user);
           navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
         }
-      }catch (error) {
-        setError(error.response?.data?.message || "Something went wrong. Please try again later.");
+      }catch (signupError) {
+        setError(signupError.response?.data?.message || "Something went wrong. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     };
 
   return(
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 animate-gradient relative overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="auth-shell">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
-        
-        {/* Floating Task Icons */}
-        <div className="absolute top-1/4 left-1/4 animate-float">
-          <HiClipboardList className="text-blue-300 text-4xl opacity-20" />
-        </div>
-        <div className="absolute top-1/3 right-1/4 animate-float animation-delay-1000">
-          <HiCheckCircle className="text-indigo-300 text-5xl opacity-20" />
-        </div>
-        <div className="absolute bottom-1/4 left-1/3 animate-float animation-delay-2000">
-          <HiUsers className="text-purple-300 text-4xl opacity-20" />
-        </div>
-        <div className="absolute bottom-1/3 right-1/3 animate-float animation-delay-3000">
-          <HiChartBar className="text-blue-300 text-3xl opacity-20" />
-        </div>
+        <div className="absolute top-0 left-12 h-72 w-72 rounded-full blur-3xl opacity-35" style={{ background: "rgba(40, 80, 217, 0.18)" }} />
+        <div className="absolute bottom-0 right-12 h-80 w-80 rounded-full blur-3xl opacity-35" style={{ background: "rgba(217, 119, 87, 0.18)" }} />
       </div>
 
-      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-500 hover:shadow-2xl relative z-10">
+      <div className="auth-frame relative z-10">
         <div className="flex flex-col lg:flex-row">
-          {/* Left Side - Branding */}
-          <div className="lg:w-2/5 bg-gradient-to-br from-primary to-blue-600 p-8 lg:p-12 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-white opacity-5">
-              <div className="absolute top-0 left-0 w-64 h-64 bg-white rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
-              <div className="absolute bottom-0 right-0 w-64 h-64 bg-blue-300 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse" style={{animationDelay: '1s'}}></div>
-            </div>
-            
+          <div className="auth-brand-panel">
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-8 animate-fade-in">
-                <HiCheckCircle className="text-3xl animate-bounce" style={{animationDuration: '2s'}} />
-                <h1 className="text-2xl font-bold">TaskFlow</h1>
+              <div className="flex items-center gap-3 mb-7">
+                <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                  <HiCheckCircle className="text-2xl" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">TaskFlow</p>
+                  <h1 className="text-2xl font-semibold tracking-tight">A better-looking workflow</h1>
+                </div>
               </div>
-              
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4 animate-fade-in" style={{animationDelay: '0.2s'}}>Organize. Collaborate. Achieve.</h2>
-              <p className="text-blue-100 mb-8 animate-fade-in" style={{animationDelay: '0.4s'}}>Streamline your workflow and boost productivity with our intuitive task management platform.</p>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 animate-slide-in-left" style={{animationDelay: '0.6s'}}>
-                  <HiClipboardList className="text-2xl mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold mb-1">Smart Task Organization</h3>
-                    <p className="text-sm text-blue-100">Create, assign, and track tasks with ease</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 animate-slide-in-left" style={{animationDelay: '0.8s'}}>
-                  <HiUsers className="text-2xl mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold mb-1">Team Collaboration</h3>
-                    <p className="text-sm text-blue-100">Work together seamlessly in real-time</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 animate-slide-in-left" style={{animationDelay: '1s'}}>
-                  <HiChartBar className="text-2xl mt-1 flex-shrink-0" />
-                  <div>
-                    <h3 className="font-semibold mb-1">Progress Tracking</h3>
-                    <p className="text-sm text-blue-100">Monitor performance with detailed insights</p>
-                  </div>
-                </div>
+
+              <h2 className="text-3xl lg:text-4xl font-semibold leading-tight max-w-sm">
+                Build your team space with structure and style.
+              </h2>
+              <p className="text-white/78 mt-4 max-w-md leading-6 text-sm lg:text-base">
+                Create an account and start managing tasks in a UI that feels cleaner, warmer, and easier to use.
+              </p>
+
+              <div className="grid gap-3 mt-7">
+                <FeatureItem icon={HiClipboardList} title="Task clarity" text="Create and assign work without cluttered forms or flat cards." />
+                <FeatureItem icon={HiUsers} title="Collaboration-ready" text="Roles, ownership, and progress fit into one consistent product language." />
+                <FeatureItem icon={HiChartBar} title="Aesthetic dashboards" text="Reports and tracking feel polished instead of default blue-and-white." />
               </div>
             </div>
           </div>
 
-          {/* Right Side - Form */}
-          <div className="lg:w-3/5 p-8 lg:p-12">
-            <div className="max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2 animate-fade-in">Create Your Account</h3>
-              <p className="text-gray-600 mb-6 animate-fade-in" style={{animationDelay: '0.1s'}}>Start managing your tasks efficiently today</p>
+          <div className="auth-form-panel">
+            <div className="max-w-lg mx-auto">
+              <p className="soft-label">Get Started</p>
+              <h3 className="text-3xl font-semibold text-slate-900 mt-2">Create Your Account</h3>
+              <p className="text-slate-500 mt-2 mb-5">Set up your profile and start organizing work.</p>
 
-              <form onSubmit={handleSingUp} className="space-y-4">
-                {/* Profile Picture */}
-                <div className="flex justify-center mb-4 animate-fade-in" style={{animationDelay: '0.2s'}}>
+              <form onSubmit={handleSingUp} className="space-y-3.5">
+                <div className="flex justify-center mb-6">
                   <div className="relative group">
-                    <div className="w-20 h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:border-primary group-hover:scale-105">
+                    <div className="w-20 h-20 rounded-full border border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-white/70 shadow-sm">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-gray-400 text-xs text-center px-2">Photo</span>
+                        <span className="text-slate-400 text-xs text-center px-2">Add photo</span>
                       )}
                     </div>
-                    <label className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-blue-600 transition-all duration-300 hover:scale-110">
+                    <label className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer shadow-lg">
                       <span className="text-xs">+</span>
                       <input accept="image/*" className="hidden" type="file" onChange={handleImageChange} />
                     </label>
@@ -173,10 +148,10 @@ const SignUp = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="animate-fade-in" style={{animationDelay: '0.3s'}}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                     <input
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:border-gray-400"
+                      className="form-input mt-0"
                       placeholder="John Doe"
                       type="text"
                       value={fullName}
@@ -184,10 +159,10 @@ const SignUp = () => {
                     />
                   </div>
 
-                  <div className="animate-fade-in" style={{animationDelay: '0.4s'}}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
                     <input
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:border-gray-400"
+                      className="form-input mt-0"
                       placeholder="you@company.com"
                       type="email"
                       value={email}
@@ -195,22 +170,22 @@ const SignUp = () => {
                     />
                   </div>
 
-                  <div className="animate-fade-in" style={{animationDelay: '0.5s'}}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
                     <input
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:border-gray-400"
-                      placeholder="••••••••"
+                      className="form-input mt-0"
+                      placeholder="Create a password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
 
-                  <div className="animate-fade-in" style={{animationDelay: '0.6s'}}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Admin Token (Optional)</label>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Admin Token</label>
                     <input
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:border-gray-400"
-                      placeholder="6-digit code"
+                      className="form-input mt-0"
+                      placeholder="Optional"
                       type="text"
                       value={adminInviteToken}
                       onChange={(e) => setAdminInviteToken(e.target.value)}
@@ -218,28 +193,19 @@ const SignUp = () => {
                   </div>
                 </div>
 
-                {error && <p className="text-red-500 text-sm animate-shake">{error}</p>}
+                {error && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
 
-                <button 
-                  type="submit" 
-                  disabled={isLoading}
-                  className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed animate-fade-in"
-                  style={{animationDelay: '0.7s'}}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating Account...
-                    </span>
-                  ) : 'Create Account'}
+                <button type="submit" disabled={isLoading} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
 
-                <p className="text-center text-sm text-gray-600 animate-fade-in" style={{animationDelay: '0.8s'}}>
+                <p className="text-center text-sm text-slate-600">
                   Already have an account?{" "}
-                  <Link className="text-primary font-semibold hover:underline transition-all" to="/login">
+                  <Link className="text-primary font-semibold hover:underline" to="/login">
                     Sign In
                   </Link>
                 </p>
@@ -248,63 +214,20 @@ const SignUp = () => {
           </div>
         </div>
       </div>
-      
-      <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slide-in-left {
-          from { opacity: 0; transform: translateX(-20px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        @keyframes blob {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          25% { transform: translate(20px, -50px) scale(1.1); }
-          50% { transform: translate(-20px, 20px) scale(0.9); }
-          75% { transform: translate(50px, 50px) scale(1.05); }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.6s ease-out forwards;
-          opacity: 0;
-        }
-        .animate-slide-in-left {
-          animation: slide-in-left 0.6s ease-out forwards;
-          opacity: 0;
-        }
-        .animate-shake {
-          animation: shake 0.3s ease-in-out;
-        }
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        .animation-delay-3000 {
-          animation-delay: 3s;
-        }
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   )
 }
+
+const FeatureItem = ({ icon: Icon, title, text }) => (
+  <div className="flex items-start gap-3 rounded-[20px] border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
+    <div className="w-9 h-9 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+      <Icon className="text-lg" />
+    </div>
+    <div>
+      <h3 className="font-semibold">{title}</h3>
+      <p className="text-[13px] text-white/72 mt-1 leading-5">{text}</p>
+    </div>
+  </div>
+);
 
 export default SignUp

@@ -48,8 +48,11 @@ const ManageUsers = () => {
   return (
     <DashboardLayout activeMenu="Team Members">
       <div className="mt-5 mb-10 animate-slide-down">
-        <div className="flex md:flex-row md:items-center justify-between">
-          <h2 className="text-xl md:text-xl font-medium">Team Members</h2>
+        <div className="page-header">
+          <div>
+            <p className="soft-label">People</p>
+            <h2 className="page-title mt-2">Team Members</h2>
+          </div>
 
           <button className="flex md:flex download-btn" onClick={handleDownloadReport}>
             <LuFileSpreadsheet className="text-lg"/>

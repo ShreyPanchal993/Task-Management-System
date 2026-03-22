@@ -2,6 +2,7 @@ export const BASE_URL = "http://localhost:8000";
 
 export const API_PATHS = {
     AUTH: {
+        CSRF_TOKEN: "/api/auth/csrf-token", // Get CSRF token cookie
         REGISTER: "/api/auth/register", // Register API endpoint
         LOGIN: "/api/auth/login", // Login API endpoint
         LOGOUT: "/api/auth/logout", // Logout API endpoint
