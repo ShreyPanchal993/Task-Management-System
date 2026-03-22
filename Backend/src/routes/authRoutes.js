@@ -2,20 +2,27 @@ import express from "express";
 import * as authController from "../controllers/authController.js";
 import { protect } from "../middlewares/authMiddleware.js"
 import upload from "../middlewares/uploadMiddleware.js";
+import { issueCsrfToken, requireCsrfProtection } from "../utils/csrf.js";
 
 const router = express.Router();
 
 // Auth Routes
-router.post("/register", authController.registerUser);
+router.get("/csrf-token", issueCsrfToken);
 
-router.post("/login", authController.loginUser);
+router.post("/register", requireCsrfProtection, authController.registerUser);
+
+router.post("/login", requireCsrfProtection, authController.loginUser);
+
+router.post("/logout", requireCsrfProtection, authController.logoutUser);
+
+router.post("/refresh-token", requireCsrfProtection, authController.refreshToken);
 
 router
     .route("/profile")
     .get(protect, authController.getUserProfile)
-    .patch(protect, authController.updateUserProfile);
+    .patch(protect, requireCsrfProtection, authController.updateUserProfile);
 
-router.post("/upload-image", upload.single("image"), (req, res) => {
+router.post("/upload-image", protect, requireCsrfProtection, upload.single("image"), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No image uploaded" });

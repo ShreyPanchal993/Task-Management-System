@@ -2,54 +2,31 @@ import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
 
 const getTasks = async (user, filter = {}) => { 
-    let tasks;
-    if (user.role === 'admin') {
-        tasks = await Task.find(filter).populate('assignedTo', 'name email profilePicture');
-    }else{
-        tasks = await Task.find({ ...filter, assignedTo: user._id }).populate(
-            'assignedTo', 
-            'name email profilePicture'
-        );
-    }
-    
-    tasks = await Promise.all(
-        tasks.map(async (task) => {
-            const completedCount = await task.todoChecklist.filter(
-                (item) => item.completed
-            ).length;
-            return { ...task._doc, completedTodoCount: completedCount };
-        })
-    );
+    const baseFilter = user.role === 'admin' ? filter : { ...filter, assignedTo: user._id };
 
-    const allTasks = await Task.countDocuments(
-        user.role === 'admin' ? {} : { assignedTo: user._id }
-    );
-    
-    const pendingTasks = await Task.countDocuments({ 
-        ...filter,
-        status: 'Pending',
-        ...(user.role !== 'admin' && { assignedTo: user._id }),
-    });
+    const [tasksRaw, statusCounts] = await Promise.all([
+        Task.find(baseFilter).populate('assignedTo', 'name email profilePicture').lean(),
+        Task.aggregate([
+            { $match: user.role === 'admin' ? {} : { assignedTo: user._id } },
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ])
+    ]);
 
-    const inProgressTasks = await Task.countDocuments({ 
-        ...filter,
-        status: 'In Progress',
-        ...(user.role !== 'admin' && { assignedTo: user._id }),
-    });
+    const tasks = tasksRaw.map(task => ({
+        ...task,
+        completedTodoCount: task.todoChecklist.filter(item => item.completed).length
+    }));
 
-    const completedTasks = await Task.countDocuments({ 
-        ...filter,
-        status: 'Completed',
-        ...(user.role !== 'admin' && { assignedTo: user._id }),
-    });
+    const countMap = statusCounts.reduce((acc, s) => { acc[s._id] = s.count; return acc; }, {});
+    const allTasks = Object.values(countMap).reduce((a, b) => a + b, 0);
 
     return { 
         tasks, 
         statusSummary: {
             all: allTasks, 
-            pendingTasks, 
-            inProgressTasks, 
-            completedTasks
+            pendingTasks: countMap['Pending'] || 0, 
+            inProgressTasks: countMap['In Progress'] || 0, 
+            completedTasks: countMap['Completed'] || 0
         } 
     };
 };
@@ -114,131 +91,64 @@ const updateTaskChecklist = async (task) => {
 };
 
 const getDashboardData = async () => { 
-    const totalTasks = await Task.countDocuments();
-    const pendingTasks = await Task.countDocuments({ status: 'Pending' });
-    const completedTasks = await Task.countDocuments({ status: 'Completed' });
-    const overdueTasks = await Task.countDocuments({
-        status: { $ne: 'Completed' },
-        dueDate: { $lt: new Date() },
-    });
-
-    const taskDistributionRaw = await Task.aggregate([
-        {
-            $group: {
-                _id: '$status',
-                count: { $sum: 1 },
-            },
-        },
+    const [taskDistributionRaw, taskPriorityLevelRaw, overdueTasks, recentTasks] = await Promise.all([
+        Task.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+        Task.aggregate([{ $group: { _id: '$priority', count: { $sum: 1 } } }]),
+        Task.countDocuments({ status: { $ne: 'Completed' }, dueDate: { $lt: new Date() } }),
+        Task.find().sort({ createdAt: -1 }).limit(5).select('title status priority dueDate createdAt').lean()
     ]);
 
     const taskDistribution = TASK_STATUS.reduce((acc, status) => {
-        const formattedKey = status.replace(/\s+/g, '');
-        acc[formattedKey] = 
-            taskDistributionRaw.find(item => item._id === status)?.count || 0;
+        acc[status.replace(/\s+/g, '')] = taskDistributionRaw.find(i => i._id === status)?.count || 0;
         return acc;
     }, {});
-    taskDistribution["All"] = totalTasks;
-
-    const taskPriorityLevelRaw = await Task.aggregate([
-        {
-            $group: {
-                _id: '$priority',
-                count: { $sum: 1 },
-            },
-        },
-    ]);
+    taskDistribution['All'] = taskDistributionRaw.reduce((a, b) => a + b.count, 0);
 
     const taskPriorityLevel = TASK_PRIORITIES.reduce((acc, priority) => {
-        acc[priority] =
-            taskPriorityLevelRaw.find(item => item._id === priority)?.count || 0;
+        acc[priority] = taskPriorityLevelRaw.find(i => i._id === priority)?.count || 0;
         return acc;
     }, {});
 
-    const recentTasks = await Task.find()
-        .sort({ createdAt: -1 })    
-        .limit(5)
-        .select('title status priority dueDate createdAt');
-
     return { 
-        statistics:{
-            totalTasks,
-            pendingTasks,
-            completedTasks,
+        statistics: {
+            totalTasks: taskDistribution['All'],
+            pendingTasks: taskDistribution['Pending'] || 0,
+            completedTasks: taskDistribution['Completed'] || 0,
             overdueTasks
         },
-        charts: {
-            taskDistribution,
-            taskPriorityLevel
-        },
+        charts: { taskDistribution, taskPriorityLevel },
         recentTasks
     };
 }; 
 
 const getUserDashboardData = async (userId) => { 
-    try{
-        const totalTasks = await Task.countDocuments({ assignedTo: userId });
-        const pendingTasks = await Task.countDocuments({ assignedTo: userId, status: 'Pending' });
-        const completedTasks = await Task.countDocuments({ assignedTo: userId, status: 'Completed' });
-        const overdueTasks = await Task.countDocuments({
-            assignedTo: userId,
-            status: { $ne: 'Completed' },
-            dueDate: { $lt: new Date() },
-        });
-
-        const taskDistributionRaw = await Task.aggregate([
-            {
-                $match: { assignedTo: userId }
-            },
-            {
-                $group: {
-                    _id: '$status',
-                    count: { $sum: 1 },
-                },
-            },
+    try {
+        const [taskDistributionRaw, taskPriorityLevelRaw, overdueTasks, recentTasks] = await Promise.all([
+            Task.aggregate([{ $match: { assignedTo: userId } }, { $group: { _id: '$status', count: { $sum: 1 } } }]),
+            Task.aggregate([{ $match: { assignedTo: userId } }, { $group: { _id: '$priority', count: { $sum: 1 } } }]),
+            Task.countDocuments({ assignedTo: userId, status: { $ne: 'Completed' }, dueDate: { $lt: new Date() } }),
+            Task.find({ assignedTo: userId }).sort({ createdAt: -1 }).limit(5).select('title status priority dueDate createdAt').lean()
         ]);
 
         const taskDistribution = TASK_STATUS.reduce((acc, status) => {
-            const formattedKey = status.replace(/\s+/g, '');
-            acc[formattedKey] = 
-                taskDistributionRaw.find(item => item._id === status)?.count || 0;
+            acc[status.replace(/\s+/g, '')] = taskDistributionRaw.find(i => i._id === status)?.count || 0;
             return acc;
         }, {});
-        taskDistribution["All"] = totalTasks;
-
-        const taskPriorityLevelRaw = await Task.aggregate([
-            {
-                $match: { assignedTo: userId }
-            },
-            {
-                $group: {
-                    _id: '$priority',
-                    count: { $sum: 1 },
-                },
-            },
-        ]);
+        taskDistribution['All'] = taskDistributionRaw.reduce((a, b) => a + b.count, 0);
 
         const taskPriorityLevel = TASK_PRIORITIES.reduce((acc, priority) => {
-            acc[priority] =
-                taskPriorityLevelRaw.find(item => item._id === priority)?.count || 0;
+            acc[priority] = taskPriorityLevelRaw.find(i => i._id === priority)?.count || 0;
             return acc;
         }, {});
 
-        const recentTasks = await Task.find({ assignedTo: userId })
-            .sort({ createdAt: -1 })    
-            .limit(5)
-            .select('title status priority dueDate createdAt');
-
         return { 
-            statistics:{
-                totalTasks,
-                pendingTasks,
-                completedTasks,
+            statistics: {
+                totalTasks: taskDistribution['All'],
+                pendingTasks: taskDistribution['Pending'] || 0,
+                completedTasks: taskDistribution['Completed'] || 0,
                 overdueTasks
             },
-            charts: {
-                taskDistribution,
-                taskPriorityLevel
-            },
+            charts: { taskDistribution, taskPriorityLevel },
             recentTasks
         };
     } catch (error) {
