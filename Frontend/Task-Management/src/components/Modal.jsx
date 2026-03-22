@@ -4,19 +4,17 @@ const Modal = ({ children, isOpen, onClose, title }) => {
     if (!isOpen) return;
 
     return (
-        <div className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-[calc(100%-1rem)] max-h-full overflow-y-auto overflow-x-hidden bg-black/20 bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex justify-center items-center w-full overflow-y-auto overflow-x-hidden bg-slate-950/25 backdrop-blur-sm p-4">
             <div className="relative p-4 w-full max-w-2xl max-h-full">
-                {/* Modal content */}
-                <div className="relative bg-white rounded-lg shadow-sm">
-                    {/* Modal header */}
-                    <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+                <div className="relative rounded-[28px] border shadow-2xl" style={{ background: "linear-gradient(180deg, rgba(255, 253, 248, 0.96) 0%, rgba(255, 255, 255, 0.84) 100%)", borderColor: "var(--border-soft)" }}>
+                    <div className="flex items-center justify-between p-4 md:p-5 border-b soft-divider">
                         <h3 className="text-lg font-medium text-gray-900">
                             {title}
                         </h3>
 
                         <button 
                             type="button"
-                            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
+                            className="text-gray-400 bg-transparent hover:bg-white hover:text-gray-900 rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
                             onClick={onClose}
                         >
                             <svg
@@ -37,7 +35,6 @@ const Modal = ({ children, isOpen, onClose, title }) => {
                         </button>
                     </div>
 
-                    {/* Modal body */}
                     <div className="p-4 md:p-5 space-y-4">
                         {children}
                     </div>

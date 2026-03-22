@@ -1,6 +1,8 @@
 import axios from "axios";
 import { BASE_URL, API_PATHS } from "./apiPaths";
-import { tokenStore } from "./tokenStore";
+import { ensureCsrfToken, getCsrfToken } from "./csrf";
+
+const SAFE_METHODS = new Set(["get", "head", "options"]);
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -13,43 +15,53 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const accessToken = tokenStore.get();
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+    async (config) => {
+        const method = (config.method || "get").toLowerCase();
+        const needsCsrfProtection = !SAFE_METHODS.has(method);
+        const isCsrfBootstrapRequest = config.url === API_PATHS.AUTH.CSRF_TOKEN;
+
+        if (needsCsrfProtection && !isCsrfBootstrapRequest) {
+            await ensureCsrfToken();
+            const csrfToken = getCsrfToken();
+
+            if (csrfToken) {
+                config.headers["X-CSRF-Token"] = csrfToken;
+            }
         }
+
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     async (error) => {
         const originalRequest = error.config;
         
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest?._retry) {
             originalRequest._retry = true;
             
             try {
-                const response = await axios.post(
+                await ensureCsrfToken();
+
+                const csrfToken = getCsrfToken();
+
+                await axios.post(
                     `${BASE_URL}${API_PATHS.AUTH.REFRESH_TOKEN}`,
                     {},
-                    { withCredentials: true }
+                    {
+                        withCredentials: true,
+                        headers: csrfToken ? { "X-CSRF-Token": csrfToken } : {},
+                    }
                 );
                 
-                const newAccessToken = response.data.data.token;
-                tokenStore.set(newAccessToken);
-                
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                tokenStore.clear();
-                if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+                if (
+                    window.location.pathname !== "/login" &&
+                    window.location.pathname !== "/signUp"
+                ) {
                     window.location.href = "/login";
                 }
                 return Promise.reject(refreshError);

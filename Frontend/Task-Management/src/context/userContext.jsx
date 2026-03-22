@@ -14,18 +14,12 @@ const UserProvider = ({ children }) => {
     }, []);
 
     const fetchUser = async () => {
-        const token = tokenStore.get();
-        if (!token) {
-            setLoading(false);
-            return;
-        }
-
         try {
             const response = await axiosInstance.get(API_PATHS.AUTH.GET_PROFILE);
             setUser(response.data.data || response.data);
         } catch (error) {
             console.error("User not authenticated", error);
-            tokenStore.clear();
+            setUser(null);
         } finally {
             setLoading(false);
         }
@@ -37,7 +31,6 @@ const UserProvider = ({ children }) => {
 
     const clearUser = () => {
         setUser(null);
-        tokenStore.clear();
     };
 
     return (
