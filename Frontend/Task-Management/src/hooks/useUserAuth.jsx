@@ -12,7 +12,7 @@ export const useUserAuth = () => {
 
         if (!user) {
             clearUser(); // Clear any existing user data
-            navigate("/login"); // Redirect to login if not authenticated
+            navigate("/"); // Redirect to landing page if not authenticated
         }
     }, [user, loading, navigate, clearUser]);
 };

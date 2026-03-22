@@ -43,7 +43,7 @@ const App = () => {
             </Route>
 
             {/* User Routes */}
-            <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+            <Route element={<PrivateRoute allowedRoles={["member", "admin"]} />}>
               <Route path="/user/dashboard" element={<UserDashboard/>} />
               <Route path="/user/tasks" element={<MyTasks/>} />
               <Route path="/user/task-details/:id" element={<ViewTaskDetails/>} />
@@ -75,7 +75,7 @@ const Root = () => {
   if (loading) return <Outlet />
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/" replace />;
   }
 
   return <Navigate to={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"} />;
