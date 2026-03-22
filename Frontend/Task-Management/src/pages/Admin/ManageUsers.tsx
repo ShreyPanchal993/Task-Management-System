@@ -1,8 +1,74 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import DashboardLayout from '../../components/layouts/DashboardLayout'
+import axiosInstance from '../../utils/axiosInstance';
+import { API_PATHS } from '../../utils/apiPaths';
+import { LuFileSpreadsheet } from 'react-icons/lu';
+import UserCard from '../../components/Cards/UserCard';
+import toast from 'react-hot-toast';
 
 const ManageUsers = () => {
+  const [allUsers, setAllUsers] = useState([]);
+  
+  const getAllUsers = async () => {
+    try{
+      const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
+      setAllUsers(response.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  //download task report
+  const handleDownloadReport = async () => {
+    try{
+      const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_USERS, {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "user_detail.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading expense details:", error);
+      toast.error("Failed to download expense details. Please try again.");
+    }
+  }
+
+  useEffect(() => {
+    getAllUsers();
+
+    return () => {}
+  }, [])
+
   return (
-    <div>ManageUsers</div>
+    <DashboardLayout activeMenu="Team Members">
+      <div className="mt-5 mb-10 animate-slide-down">
+        <div className="page-header">
+          <div>
+            <p className="soft-label">People</p>
+            <h2 className="page-title mt-2">Team Members</h2>
+          </div>
+
+          <button className="flex md:flex download-btn" onClick={handleDownloadReport}>
+            <LuFileSpreadsheet className="text-lg"/>
+            Download Report
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          {allUsers?.map((user, index) => (
+            <div key={user._id} className="animate-scale-in" style={{animationDelay: `${index * 0.05}s`}}>
+              <UserCard userInfo={user}/>
+            </div>
+          ))}
+        </div>
+      </div>
+    </DashboardLayout>
   )
 }
 

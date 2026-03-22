@@ -24,7 +24,7 @@ const taskSchema = new mongoose.Schema(
         },
         priority: {
             type: String, 
-            enum: ["Low", " Medium", "High"],
+            enum: ["Low", "Medium", "High"],
             default: "Medium"
         },
         status: {
@@ -49,7 +49,7 @@ const taskSchema = new mongoose.Schema(
                 type: String
             }
         ],
-        todoCheckList: [
+        todoChecklist: [
             todoSchema
         ],
         progress: {
@@ -61,6 +61,13 @@ const taskSchema = new mongoose.Schema(
         timestamps: true
     },
 );
+
+taskSchema.index({ assignedTo: 1 });
+taskSchema.index({ status: 1 });
+taskSchema.index({ priority: 1 });
+taskSchema.index({ createdAt: -1 });
+taskSchema.index({ assignedTo: 1, status: 1 });
+taskSchema.index({ status: 1, dueDate: 1 });
 
 const Task = mongoose.model('Task', taskSchema);
 

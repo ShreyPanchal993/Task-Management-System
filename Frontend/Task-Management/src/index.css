@@ -4,16 +4,206 @@
 @theme {
     --font-display: "Poppins", "sans-serif";
     --breakpoint-3xl: 1920px;
-    --color-primary: #1368EC;
+    --color-primary: #2850d9;
+    --color-primary-strong: #1b36a9;
+    --color-accent: #d97757;
+    --color-surface: #fffdf8;
+    --color-surface-soft: #f8f4ec;
+    --color-ink: #1f2937;
+    --color-muted: #6b7280;
 }
 
 @layer base {
+    :root {
+        --app-bg: #f3ede4;
+        --surface-1: rgba(255, 253, 248, 0.92);
+        --surface-2: rgba(255, 255, 255, 0.7);
+        --border-soft: rgba(148, 163, 184, 0.16);
+        --text-strong: #162033;
+        --text-muted: #64748b;
+        --primary: #2850d9;
+        --primary-strong: #1b36a9;
+        --accent: #d97757;
+        --success: #158f77;
+        --warning: #d59b1a;
+        --danger: #dc5d5d;
+        --shadow-soft: 0 20px 45px rgba(30, 41, 59, 0.08);
+        --shadow-strong: 0 28px 80px rgba(15, 23, 42, 0.12);
+    }
+
     html{
         font-family: var(--font-display);
     }
 
     body{
-        background-color: #fcfbfc;
-        overflow-x: hidden;  
+        min-height: 100vh;
+        color: var(--text-strong);
+        background-color: var(--app-bg);
+        background-image:
+            radial-gradient(circle at top left, rgba(40, 80, 217, 0.14), transparent 26%),
+            radial-gradient(circle at top right, rgba(217, 119, 87, 0.16), transparent 22%),
+            linear-gradient(180deg, #fbf8f2 0%, #f2ebe2 52%, #ece5dc 100%);
+        overflow-x: hidden;
     }
+
+    button {
+        @apply transition-all duration-200;
+    }
+
+    input,
+    textarea,
+    select {
+        @apply focus:outline-none;
+    }
+}
+
+.input-box {
+    @apply w-full flex justify-between gap-3 text-sm rounded-2xl px-4 py-3.5 mb-4 mt-3 border outline-none;
+    background: rgba(255, 255, 255, 0.78);
+    border-color: var(--border-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    color: var(--text-strong);
+}
+
+.btn-primary{
+    @apply w-full text-sm font-semibold text-white p-3 rounded-2xl my-1 cursor-pointer;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+    box-shadow: 0 16px 30px rgba(40, 80, 217, 0.22);
+}
+
+.btn-primary:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 20px 34px rgba(40, 80, 217, 0.28);
+}
+
+.btn-secondary{
+    @apply w-full text-sm font-semibold p-3 rounded-2xl my-1 cursor-pointer;
+    color: var(--text-strong);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid var(--border-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.card {
+    @apply p-6 rounded-[28px] border;
+    background: linear-gradient(180deg, var(--surface-1) 0%, rgba(255, 255, 255, 0.82) 100%);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+}
+
+.card-btn {
+    @apply flex items-center gap-3 text-[12px] font-semibold px-4 py-2 rounded-full border cursor-pointer;
+    color: var(--text-strong);
+    background: rgba(255, 255, 255, 0.78);
+    border-color: var(--border-soft);
+}
+
+.card-btn-fill {
+    @apply flex items-center gap-3 text-[12px] font-semibold text-white px-4 py-2 rounded-full border cursor-pointer;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
+    border-color: rgba(40, 80, 217, 0.2);
+}
+
+.form-card {
+    @apply p-6 rounded-[28px] border;
+    background: linear-gradient(180deg, rgba(255, 254, 251, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+}
+
+.form-input {
+    @apply w-full text-sm px-4 py-3.5 rounded-2xl mt-2 placeholder:text-slate-400;
+    color: var(--text-strong);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid var(--border-soft);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.add-btn {
+    @apply w-full flex items-center justify-center gap-1.5 text-xs md:text-sm font-semibold whitespace-nowrap rounded-2xl px-3 py-3 cursor-pointer;
+    color: var(--primary);
+    background: rgba(40, 80, 217, 0.1);
+    border: 1px solid rgba(40, 80, 217, 0.18);
+}
+
+.download-btn {
+    @apply items-center gap-3 text-xs md:text-[13px] px-2 md:px-3 py-2.5 rounded-full border cursor-pointer;
+    color: #0f766e;
+    background: rgba(20, 184, 166, 0.12);
+    border-color: rgba(15, 118, 110, 0.16);
+}
+
+.user-card {
+    @apply p-5 rounded-[24px] border;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 253, 248, 0.82) 100%);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-soft);
+}
+
+.page-shell {
+    @apply min-h-screen;
+}
+
+.page-header {
+    @apply flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6;
+}
+
+.page-title {
+    @apply text-2xl md:text-[28px] font-semibold tracking-tight;
+    color: var(--text-strong);
+}
+
+.page-subtitle {
+    @apply text-sm md:text-[15px];
+    color: var(--text-muted);
+}
+
+.soft-label {
+    @apply text-[11px] uppercase tracking-[0.24em] font-semibold;
+    color: rgba(100, 116, 139, 0.78);
+}
+
+.soft-divider {
+    border-color: var(--border-soft);
+}
+
+.status-pill {
+    @apply inline-flex items-center rounded-full px-3.5 py-1 text-[11px] font-semibold border;
+}
+
+.table-shell {
+    @apply overflow-x-auto rounded-[24px] border;
+    border-color: var(--border-soft);
+    background: rgba(255, 255, 255, 0.56);
+}
+
+.auth-shell {
+    @apply h-screen flex items-center justify-center p-3 md:p-4 relative overflow-hidden;
+    background:
+        radial-gradient(circle at top left, rgba(40, 80, 217, 0.2), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(217, 119, 87, 0.22), transparent 26%),
+        linear-gradient(135deg, #f7f1e7 0%, #f0e8dd 45%, #ebe4dc 100%);
+}
+
+.auth-frame {
+    @apply w-full max-w-6xl rounded-[32px] overflow-hidden border;
+    max-height: calc(100vh - 1.5rem);
+    border-color: rgba(148, 163, 184, 0.18);
+    background: rgba(255, 253, 248, 0.78);
+    box-shadow: var(--shadow-strong);
+    backdrop-filter: blur(18px);
+}
+
+.auth-brand-panel {
+    @apply lg:w-2/5 p-6 lg:p-8 text-white relative overflow-hidden;
+    background:
+        radial-gradient(circle at top left, rgba(255,255,255,0.18), transparent 28%),
+        linear-gradient(160deg, #243a9c 0%, #2850d9 50%, #d97757 120%);
+}
+
+.auth-form-panel {
+    @apply lg:w-3/5 p-6 lg:p-8;
+    background: linear-gradient(180deg, rgba(255,255,255,0.56) 0%, rgba(255,255,255,0.82) 100%);
 }
