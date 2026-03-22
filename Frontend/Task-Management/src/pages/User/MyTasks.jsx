@@ -5,6 +5,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import TaskStatusTabs from '../../components/TaskStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
+import toast from 'react-hot-toast';
 
 const MyTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
@@ -36,7 +37,7 @@ const MyTasks = () => {
 
       setTabs(statusArray);
     }catch (error) {
-      console.log("Error fetching tasks: ", error)
+      toast.error(error.response?.data?.message || "Failed to load tasks.");
     }
   };
 

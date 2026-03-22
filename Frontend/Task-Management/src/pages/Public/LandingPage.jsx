@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+﻿import React, { useContext } from "react";
 import { Link } from "react-router-dom";
 import {
   LuArrowRight,
@@ -12,18 +12,19 @@ import { UserContext } from "../../context/userContext";
 
 const LandingPage = () => {
   const { user } = useContext(UserContext);
-  const dashboardPath = user?.role === "admin" ? "/admin/dashboard" : "/user/dashboard";
+  const dashboardPath = user?.role === "admin" || user?.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard";
 
   return (
     <div className="min-h-screen text-slate-900">
       <header className="sticky top-0 z-30 border-b backdrop-blur-xl" style={{ background: "rgba(247, 241, 231, 0.76)", borderColor: "rgba(148, 163, 184, 0.14)" }}>
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-8">
           <div>
-            <p className="soft-label">TaskFlow</p>
-            <h1 className="text-lg font-semibold tracking-tight">Task Management</h1>
+            <h1 className="text-3xl font-semibold tracking-[-0.03em] text-slate-900">
+              TRACKORA
+            </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
             <Link to="/login" className="hidden md:inline-flex btn-secondary w-auto min-w-[136px] justify-center px-5">
               Sign In
             </Link>
@@ -54,7 +55,7 @@ const LandingPage = () => {
               </h2>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                TaskFlow helps teams assign work, track progress, manage members, and stay aligned without the clutter of a basic dashboard.
+                Trackora helps teams assign work, track progress, manage members, and stay aligned without the clutter of a basic dashboard.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -148,7 +149,7 @@ const LandingPage = () => {
           <div className="rounded-[32px] border px-6 py-10 text-center md:px-10" style={{ background: "linear-gradient(135deg, #243a9c 0%, #2850d9 46%, #d97757 120%)", borderColor: "rgba(255,255,255,0.14)", boxShadow: "0 24px 60px rgba(37, 56, 130, 0.22)" }}>
             <p className="soft-label !text-white/70">Start Now</p>
             <h3 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
-              Bring your task management into a cleaner, more modern workspace.
+              Bring your workflow into a cleaner, more modern Trackora workspace.
             </h3>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-white/80 md:text-base">
               Create an account, invite your team, and move from a basic utility UI to a product experience that feels intentional.
@@ -171,8 +172,8 @@ const LandingPage = () => {
       >
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
           <div>
-            <p className="font-semibold text-slate-900">TaskFlow</p>
-            <p className="mt-1">Modern task management for teams and focused execution.</p>
+            <p className="font-semibold text-slate-900">Trackora</p>
+            <p className="mt-1">Modern task tracking for teams and focused execution.</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-5">
@@ -187,7 +188,7 @@ const LandingPage = () => {
           style={{ borderColor: "rgba(148, 163, 184, 0.12)" }}
         >
           <div className="mx-auto max-w-7xl px-4 py-4 text-xs text-slate-500 md:px-8">
-            Copyright © {new Date().getFullYear()} TaskFlow. All rights reserved.
+            {`Copyright © ${new Date().getFullYear()} Trackora. All rights reserved.`}
           </div>
         </div>
       </footer>
@@ -248,3 +249,5 @@ const StepCard = ({ number, title, text }) => (
 );
 
 export default LandingPage;
+
+

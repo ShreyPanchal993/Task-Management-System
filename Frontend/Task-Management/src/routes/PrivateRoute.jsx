@@ -14,7 +14,7 @@ const PrivateRoute = ({allowedRoles}) => {
   }
 
   if (allowedRoles?.length && !allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"} replace />;
+    return <Navigate to={user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard"} replace />;
   }
 
   return <Outlet/>
