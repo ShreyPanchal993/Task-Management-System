@@ -152,8 +152,8 @@ const CreateTask = () => {
     try {
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_TASK_BY_ID(taskId));
 
-      if(response.data){
-        const taskInfo = response.data;
+      if(response.data?.data){
+        const taskInfo = response.data.data;
         setCurrentTask(taskInfo);
 
         setTaskData((prevState) => ({
@@ -167,7 +167,7 @@ const CreateTask = () => {
         })) 
       }
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error fetching task:", error)
     }
   };
 
@@ -194,18 +194,21 @@ const CreateTask = () => {
 
   return (
     <DashboardLayout activeMenu="Create Task">
-      <div className="mt-5">
-        <div className="grid grid-cols-1 md:grid-cols-4 mt-4">
-          <div className="form-card col-span-3">
+      <div className="mt-5 mb-10 animate-slide-down">
+        <div className="flex justify-center">
+          <div className="form-card w-full max-w-4xl">
 
             <div className="flex item-center justify-between">
-              <h2 className="text-xl md:text-xl font-medium">
+              <div>
+                <p className="soft-label">{taskId ? "Task Editor" : "New Task"}</p>
+                <h2 className="text-xl md:text-2xl font-semibold mt-2">
                 {taskId ? "Update Task" : "Create Task"}
-              </h2>
+                </h2>
+              </div>
 
               {taskId && (
                 <button 
-                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-500 bg-rose-50 rounded px-2 py-1 border border-rose-100 hover:border-rose-300 cursor-pointer"
+                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-700 bg-rose-100/70 rounded-full px-4 py-2 border border-rose-200 hover:border-rose-300 hover:bg-rose-100 transition-colors cursor-pointer"
                   onClick={() => setOpenDeleteAlert(true)}
                 >
                   <LuTrash2 className="text-base" /> Delete
@@ -213,14 +216,14 @@ const CreateTask = () => {
               )}
             </div>
 
-              <div className="mt-4">
-                <label className="text-xs font-medium text-slate-600">
-                  Task Title
-                </label>
+              <div className="mt-6">
+                  <label className="text-sm font-medium text-slate-700">
+                    Task Title
+                  </label>
 
                 <input
                   placeholder="Create App UI" 
-                  className="form-input"
+                  className="form-input mt-1.5"
                   value={taskData.title}
                   onChange={({ target }) => 
                     handleValueChange("title", target.value)
@@ -228,15 +231,15 @@ const CreateTask = () => {
                 />
               </div>
 
-              <div className="mt-3">
-                <label className="text-xs font-medium text-slate-600">
-                  Description
-                </label>
+              <div className="mt-5">
+                  <label className="text-sm font-medium text-slate-700">
+                    Description
+                  </label>
                 
                 <textarea 
                   placeholder="Describe Task" 
-                  className="form-input"
-                  rows={4}
+                  className="form-input mt-1.5"
+                  rows={5}
                   value={taskData.description}
                   onChange={({ target }) => 
                     handleValueChange("description", target.value)
@@ -244,9 +247,9 @@ const CreateTask = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-12 gap-4 mt-2">
-                <div className="col-span-6 md:col-span-4">
-                  <label className="text-xs font-medium text-slate-600">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
                     Priority
                   </label>
 
@@ -258,14 +261,14 @@ const CreateTask = () => {
                   />
                 </div>
 
-                <div className="col-span-6 md:col-span-4">
-                  <label className="text-xs font-medium text-slate-600">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
                     Due Date
                   </label>
 
                   <input 
                     placeholder="Crate App UI"
-                    className="form-input"
+                    className="form-input mt-1.5"
                     value={taskData.dueDate}
                     onChange={({ target }) => 
                       handleValueChange("dueDate", target.value)
@@ -274,8 +277,8 @@ const CreateTask = () => {
                   />
                 </div>
 
-                <div className="col-span-12 md:col-span-4">
-                  <label className="text-xs font-medium text-slate-600">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">
                     Assign To
                   </label>
 
@@ -287,8 +290,8 @@ const CreateTask = () => {
                 </div>
               </div>
 
-              <div className="mt-3">
-                <label className="text-xs font-medium text-slate-600">
+              <div className="mt-5">
+                <label className="text-sm font-medium text-slate-700">
                   TODO Checklist
                 </label>
 
@@ -299,8 +302,8 @@ const CreateTask = () => {
                 />
               </div>
 
-              <div className="mt-3">
-                <label className="text-xs font-semibold text-slate-600">
+              <div className="mt-5">
+                <label className="text-sm font-medium text-slate-700">
                   Add Attachments
                 </label>
 
@@ -313,12 +316,12 @@ const CreateTask = () => {
               </div>
 
               {error && (
-                <p className="text-xs font-medium text-red-500 mt-5"> {error} </p>
+                <p className="text-sm font-medium text-red-500 mt-5"> {error} </p>
               )}
 
-              <div className="flex justify-end mt-7">
+              <div className="flex justify-end mt-8">
                 <button
-                  className="add-btn"
+                  className="add-btn px-8 py-3"
                   onClick={handleSubmit}
                   disabled={loading}
                 >

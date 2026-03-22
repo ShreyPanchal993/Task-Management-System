@@ -17,6 +17,9 @@ const CustomPieChart = ({ data, colors }) => {
                     outerRadius={130}
                     innerRadius={100}
                     labelLine={false}
+                    animationBegin={200}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
                 >
                     {data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />

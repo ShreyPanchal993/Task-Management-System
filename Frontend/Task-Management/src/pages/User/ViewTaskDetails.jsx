@@ -1,26 +1,27 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import moment from 'moment';
 import AvatarGroup from '../../components/AvatarGroup';
-import { LuSquareArrowOutUpRight } from 'react-icons/lu';
+import { LuSquareArrowOutUpRight, LuX } from 'react-icons/lu';
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [task, setTask] = useState(null);
 
   const getStatusTagColor = (status) => {
     switch (status) {
       case "In Progress":
-        return "text-cyan-500 bg-cyan-50 border border-cyan-500/10";
+        return "text-sky-700 bg-sky-100/80 border border-sky-200";
 
       case "Completed":
-        return "text-lime-500 bg-lime-50 border border-lime-500/10";
+        return "text-emerald-700 bg-emerald-100/80 border border-emerald-200";
 
       default:
-        return "text-violet-500 bg-violet-50 border border-violet-500/10";
+        return "text-amber-700 bg-amber-100/80 border border-amber-200";
     }
   };
 
@@ -29,12 +30,12 @@ const ViewTaskDetails = () => {
     try{
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_TASK_BY_ID(id));
 
-      if (response.data) {
-        const taskInfo = response.data;
+      if (response.data?.data) {
+        const taskInfo = response.data.data;
         setTask(taskInfo);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching task:", error);
     }
   };
 
@@ -53,7 +54,7 @@ const ViewTaskDetails = () => {
       });
 
       if (response.status === 200) {
-        setTask(response.data?.task || task);
+        setTask(response.data?.data || task);
       } else {
         // Optionally revert the toggle if the API call fails.
         todoChecklist[index].completed = !todoChecklist[index]?.completed;
@@ -85,13 +86,25 @@ const ViewTaskDetails = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 mt-4">
             <div className="form-card col-span-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm md:text-xl font-medium">{task?.title}</h2>
+                <div>
+                  <p className="soft-label">Task Detail</p>
+                  <h2 className="text-sm md:text-xl font-semibold mt-2">{task?.title}</h2>
+                </div>
 
-                <div className={`text-[11px] md:text-[13px] font-medium ${getStatusTagColor(
-                  task?.status
-                  )} px-4 py-0.5 rounded`}
-                >
-                  {task?.status}
+                <div className="flex items-center gap-3">
+                  <div className={`text-[11px] md:text-[13px] font-semibold ${getStatusTagColor(
+                    task?.status
+                    )} px-4 py-1 rounded-full`}
+                  >
+                    {task?.status}
+                  </div>
+                  
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors"
+                  >
+                    <LuX className="text-xl text-gray-600" />
+                  </button>
                 </div>
               </div>
 
@@ -167,14 +180,14 @@ const InfoBox = ({ label, value }) => {
     <>
       <label className="text-xs font-medium text-slate-500">{label}</label>
 
-      <p className="text-[12px] md:text-[13px] font-medium text-gray-700 mt-0.5">{value}</p>
+      <p className="text-[12px] md:text-[13px] font-medium text-slate-700 mt-0.5">{value}</p>
     </>
   )
 }
 
 const TodoCheckList = ({text, isChecked, onCheck}) => {
   return (
-    <div className="flex items-center gap-3 p-3">
+    <div className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/60">
       <input 
         type="checkbox" 
         checked={isChecked}
@@ -182,7 +195,7 @@ const TodoCheckList = ({text, isChecked, onCheck}) => {
         className="w-4 h-4 accent-blue-600 border-gray-300 rounded-sm outline-none cursor-pointer"
       />
 
-      <p className="text-[13px] text-gray-800">{text}</p>
+      <p className="text-[13px] text-slate-800">{text}</p>
     </div>
   )
 }
@@ -190,7 +203,8 @@ const TodoCheckList = ({text, isChecked, onCheck}) => {
 const Attachments = ({ link, index, onClick }) => {
   return (
     <div 
-      className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2 cursor-pointer"
+      className="flex justify-between bg-white/70 border px-3 py-3 rounded-2xl mb-3 mt-2 cursor-pointer"
+      style={{ borderColor: "var(--border-soft)" }}
       onClick={onClick}
     >
       <div className="flex-1 flex items-center gap-3">
@@ -198,10 +212,10 @@ const Attachments = ({ link, index, onClick }) => {
           {index < 9 ? `0${index + 1}` : index + 1}
         </span>
 
-        <p className="text-xs text-black">{link}</p>
+        <p className="text-xs text-slate-900">{link}</p>
       </div>
 
-      <LuSquareArrowOutUpRight className="text-gray-400"/>
+      <LuSquareArrowOutUpRight className="text-slate-400"/>
     </div>
   )
 }

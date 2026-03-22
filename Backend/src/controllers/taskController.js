@@ -1,4 +1,7 @@
 import * as taskService from '../services/taskService.js';
+import logger from '../config/logger.js';
+import ApiSuccess from '../utils/ApiSuccess.js';
+import ApiError from '../utils/ApiError.js';
 
 const getTasks = async (req, res) => {
     try {
@@ -9,9 +12,11 @@ const getTasks = async (req, res) => {
         }
 
         const tasks = await taskService.getTasks(req.user, filter);
-        res.json(tasks);
+        return ApiSuccess.ok(res, "Tasks fetched successfully", tasks);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Get tasks failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -19,11 +24,14 @@ const getTaskById = async (req, res) => {
     try{
         const task = await taskService.getTaskById(req.params.id);
         if (!task) {
-            return res.status(404).json({ message: "Task not found" });
+            const apiError = ApiError.notFound("Task not found");
+            return res.status(apiError.statusCode).json(apiError);
         }
-        res.json(task);
+        return ApiSuccess.ok(res, "Task fetched successfully", task);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Get task by ID failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -32,7 +40,8 @@ const createTask = async (req, res) => {
         const {title, description, priority, dueDate, assignedTo, attachments, todoChecklist} = req.body;
 
         if (!Array.isArray(assignedTo)) {
-            return res.status(400).json({ message: "assignedTo must be an array of user IDs" }); 
+            const apiError = ApiError.badRequest("assignedTo must be an array of user IDs");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
         const newTask = await taskService.createTask({
@@ -46,9 +55,12 @@ const createTask = async (req, res) => {
             todoChecklist
         });
 
-        res.status(201).json({ message:"Task created successfully", task: newTask });
+        logger.info(`Task created: ${newTask._id} by ${req.user._id}`);
+        return ApiSuccess.created(res, "Task created successfully", newTask);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Create task failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -56,17 +68,22 @@ const updateTask = async (req, res) => {
     try{
         const task = await taskService.getTaskById(req.params.id);
         if (!task) {
-            return res.status(404).json({ message: "Task not found" });
+            const apiError = ApiError.notFound("Task not found");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
         const updatedTask = await taskService.updateTask(task, req.body, req.user);
         if (!updatedTask) {
-            return res.status(404).json({ message: "Task not found or unauthorized" });
+            const apiError = ApiError.notFound("Task not found or unauthorized");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
-        res.json({ message: "Task updated successfully", updatedTask });
+        logger.info(`Task updated: ${req.params.id} by ${req.user._id}`);
+        return ApiSuccess.ok(res, "Task updated successfully", updatedTask);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Update task failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -74,11 +91,15 @@ const deleteTask = async (req, res) => {
     try{
         const deleted = await taskService.deleteTask(req.params.id);
         if (!deleted) {
-            return res.status(404).json({ message: "Task not found" });
+            const apiError = ApiError.notFound("Task not found");
+            return res.status(apiError.statusCode).json(apiError);
         }
-        res.json({ message: "Task deleted successfully" });
+        logger.info(`Task deleted: ${req.params.id} by ${req.user._id}`);
+        return ApiSuccess.ok(res, "Task deleted successfully");
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Delete task failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };     
 
@@ -86,17 +107,22 @@ const updateTaskStatus = async (req, res) => {
     try{
         const task = await taskService.getTaskById(req.params.id);
         if (!task) {
-            return res.status(404).json({ message: "Task not found" });
+            const apiError = ApiError.notFound("Task not found");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
         const updatedTask = await taskService.updateTaskStatus(task, req.body.status, req.user);
         if (!updatedTask) {
-            return res.status(404).json({ message: "Task not found or unauthorized" });
+            const apiError = ApiError.notFound("Task not found or unauthorized");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
-        res.json(updatedTask);
+        logger.info(`Task status updated: ${req.params.id} to ${req.body.status}`);
+        return ApiSuccess.ok(res, "Task status updated successfully", updatedTask);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Update task status failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -106,30 +132,38 @@ const updateTaskChecklist = async (req, res) => {
 
         const task = await taskService.getTaskById(req.params.id);  
         if (!task) {
-            return res.status(404).json({ message: "Task not found" });
+            const apiError = ApiError.notFound("Task not found");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
         const isAssigned = task.assignedTo.some(user => user._id.toString() === req.user._id.toString());
         if (!isAssigned && req.user.role !== 'admin') {
-            return res.status(403).json({ message: "Unauthorized to update this task's checklist" });
+            const apiError = ApiError.forbidden("Unauthorized to update this task's checklist");
+            return res.status(apiError.statusCode).json(apiError);
         }
 
         const updatedTask = await taskService.updateTaskChecklist(task, todoChecklist);
         if (!updatedTask) {
-            return res.status(404).json({ message: "Task not found or unauthorized" });
+            const apiError = ApiError.notFound("Task not found or unauthorized");
+            return res.status(apiError.statusCode).json(apiError);
         }
-        res.json({ message: "Task checklist updated successfully", task: updatedTask });
+        logger.info(`Task checklist updated: ${req.params.id}`);
+        return ApiSuccess.ok(res, "Task checklist updated successfully", updatedTask);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Update task checklist failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
 const getDashboardData = async (req, res) => { 
     try {
         const data = await taskService.getDashboardData();
-        res.json(data);
+        return ApiSuccess.ok(res, "Dashboard data fetched successfully", data);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Get dashboard data failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 
@@ -137,9 +171,11 @@ const getUserDashboardData = async (req, res) => {
     try {
         const userId = req.user._id;
         const data = await taskService.getUserDashboardData(userId);
-        res.json(data);
+        return ApiSuccess.ok(res, "User dashboard data fetched successfully", data);
     } catch (error) {
-        res.status(500).json({ message:"Server error: ", error: error.message });
+        logger.error(`Get user dashboard data failed: ${error.message}`);
+        const apiError = ApiError.internal(error.message);
+        return res.status(apiError.statusCode).json(apiError);
     }
 };
 

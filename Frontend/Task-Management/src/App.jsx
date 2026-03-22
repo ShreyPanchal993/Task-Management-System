@@ -10,6 +10,7 @@ import { Toaster } from "react-hot-toast";
 
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
+import LandingPage from "./pages/Public/LandingPage";
 import Dashboard from "./pages/Admin/Dashboard";
 import ManageTasks from "./pages/Admin/ManageTasks";
 import CreateTask from "./pages/Admin/CreateTask";
@@ -28,8 +29,10 @@ const App = () => {
       <div>
         <Router>
           <Routes>
+            <Route path="/" element={<LandingPage/>} />
             <Route path="/login" element={<Login/>} />
             <Route path="/signUp" element={<SignUp/>} />
+            <Route path="/app" element={<Root/>} />
 
             {/* Admin Routes */}
             <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
@@ -47,7 +50,7 @@ const App = () => {
             </Route>
 
             {/* Default Route */}
-            <Route path="*" element={<Root/>} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </Router>
       </div>

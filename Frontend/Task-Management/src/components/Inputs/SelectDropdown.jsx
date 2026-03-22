@@ -13,8 +13,10 @@ const SelectDropdown = ({ options, value, onChange, placeholder }) => {
         <div className="relative w-full">
             {/* Dropdown Button */}
             <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full text-sm text-black outline-none bg-white border border-slate-100 px-2.5 py-3 rounded-md mt-2 flex justify-between items-center"
+                className="w-full text-sm outline-none px-4 py-3.5 rounded-2xl mt-2 flex justify-between items-center border"
+                style={{ color: "var(--text-strong)", background: "rgba(255, 255, 255, 0.78)", borderColor: "var(--border-soft)" }}
             >
                 {value ? options.find((opt) => opt.value === value)?.label: placeholder}
                 <span className="ml-2">
@@ -24,12 +26,12 @@ const SelectDropdown = ({ options, value, onChange, placeholder }) => {
 
             {/* Dropdown Menu */}
             {isOpen && (
-                <div className="absolute w-full bg-white border border-slate-100 rounded-md mt-1 shadow-md z-10">
+                <div className="absolute w-full rounded-2xl mt-2 shadow-xl z-10 border overflow-hidden" style={{ background: "rgba(255, 253, 248, 0.98)", borderColor: "var(--border-soft)" }}>
                     {options.map((option) => (
                         <div
                             key={option.value}
                             onClick={() => handleSelect(option.value)}
-                            className="px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                            className="px-4 py-3 text-sm cursor-pointer hover:bg-white"
                         >
                             {option.label}
                         </div>

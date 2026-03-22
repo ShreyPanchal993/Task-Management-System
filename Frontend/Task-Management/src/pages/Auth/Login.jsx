@@ -1,16 +1,16 @@
 import React, { useContext, useState} from "react";
-import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
-import Input from "../../components/Inputs/Input";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext.jsx";
+import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
@@ -29,75 +29,130 @@ const Login = () => {
       }
 
       setError("");
+      setIsLoading(true);
 
-      // Login API Call
       try{
         const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
           email,
           password,
         });
 
-        const { token, user } = response.data.data;
+        const { user } = response.data.data;
 
-        if (token) {
-          localStorage.setItem("token", token);
-          updateUser({ ...user, token }); // Update user context with user data and token
-          
-          // Redirect based on role
-          if (user.role === "admin") {
-            navigate("/admin/dashboard");
-          } else {
-            navigate("/user/dashboard");
-          }
+        if (user) {
+          updateUser(user);
+          navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
         }
-      }catch (error) {
-        if (error.response && error.response.data.message) {
-          setError(error.response.data.message);
-        } else {
-          setError("Something went wrong. Please try again later.");
-        }
+      }catch (loginError) {
+        setError(loginError.response?.data?.message || "Something went wrong. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
   }
 
   return (
-    <AuthLayout>
-      <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black"> Welcome Back</h3>
-        <p className="text-xs text-slate-700 mt-[5px] mb-6">
-          Please enter your details to log in
-        </p>
-
-        <form onSubmit={handleLogin}>
-          <Input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            label="Email"
-            type="text"
-          />
-
-          <Input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            label="Password"
-            type="password"
-          />
-
-          {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
-
-          <button type="submit" className="btn-primary">Login</button>
-
-          <p className="text-[13px] text-slate-800 mt-3">
-            Don't have an account?{" "}
-            <Link className="font-medium text-primary underline" to="/signup">
-              Sign Up
-            </Link>
-          </p>
-        </form>
+    <div className="auth-shell">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-16 left-8 h-72 w-72 rounded-full blur-3xl opacity-40" style={{ background: "rgba(40, 80, 217, 0.18)" }} />
+        <div className="absolute top-32 right-8 h-80 w-80 rounded-full blur-3xl opacity-35" style={{ background: "rgba(217, 119, 87, 0.2)" }} />
+        <div className="absolute bottom-0 left-1/4 h-64 w-64 rounded-full blur-3xl opacity-30" style={{ background: "rgba(15, 118, 110, 0.16)" }} />
       </div>
-    </AuthLayout>
+
+      <div className="auth-frame relative z-10">
+        <div className="flex flex-col lg:flex-row">
+          <div className="auth-brand-panel">
+            <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(circle at top right, rgba(255,255,255,0.32), transparent 30%)" }} />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-7">
+                <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                  <HiCheckCircle className="text-2xl" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-white/70">TaskFlow</p>
+                  <h1 className="text-2xl font-semibold tracking-tight">Control center for work</h1>
+                </div>
+              </div>
+
+              <h2 className="text-3xl lg:text-4xl font-semibold leading-tight max-w-sm">
+                Sign in to a calmer, sharper workspace.
+              </h2>
+              <p className="text-white/78 mt-4 max-w-md leading-6 text-sm lg:text-base">
+                Track work, coordinate your team, and keep delivery visible without the flat basic UI.
+              </p>
+
+              <div className="grid gap-3 mt-7">
+                <FeatureItem icon={HiClipboardList} title="Organized task views" text="Clear status grouping, better hierarchy, less visual noise." />
+                <FeatureItem icon={HiUsers} title="Team visibility" text="People, ownership, and progress stay readable at a glance." />
+                <FeatureItem icon={HiChartBar} title="Sharper reporting" text="Dashboards and activity feel like a product, not a starter template." />
+              </div>
+            </div>
+          </div>
+
+          <div className="auth-form-panel flex items-center">
+            <div className="w-full max-w-md mx-auto">
+              <p className="soft-label">Welcome Back</p>
+              <h3 className="text-3xl font-semibold text-slate-900 mt-2">Sign In</h3>
+              <p className="text-slate-500 mt-2 mb-5">Enter your credentials to access your workspace.</p>
+
+              <form onSubmit={handleLogin} className="space-y-3.5">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <input
+                    className="form-input mt-0"
+                    placeholder="you@company.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                  <input
+                    className="form-input mt-0"
+                    placeholder="Enter your password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                {error && (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+
+                <button type="submit" disabled={isLoading} className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoading ? "Signing In..." : "Sign In"}
+                </button>
+
+                <p className="text-center text-sm text-slate-600">
+                  Don't have an account?{" "}
+                  <Link className="text-primary font-semibold hover:underline" to="/signUp">
+                    Create Account
+                  </Link>
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
+
+const FeatureItem = ({ icon: Icon, title, text }) => (
+  <div className="flex items-start gap-3 rounded-[20px] border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
+    <div className="w-9 h-9 rounded-2xl bg-white/15 flex items-center justify-center shrink-0">
+      <Icon className="text-lg" />
+    </div>
+    <div>
+      <h3 className="font-semibold">{title}</h3>
+      <p className="text-[13px] text-white/72 mt-1 leading-5">{text}</p>
+    </div>
+  </div>
+);
 
 export default Login

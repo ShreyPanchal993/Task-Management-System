@@ -1,47 +1,77 @@
 import axios from "axios";
-import { BASE_URL } from "./apiPaths";
+import { BASE_URL, API_PATHS } from "./apiPaths";
+import { ensureCsrfToken, getCsrfToken } from "./csrf";
+
+const SAFE_METHODS = new Set(["get", "head", "options"]);
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    timeout: 10000, // 10 seconds timeout
+    timeout: 10000,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
     },
+    withCredentials: true,
 });
 
-// Request Interceptor
 axiosInstance.interceptors.request.use(
-    (config) => {
-        const accessToken = localStorage.getItem("token");
-        if (accessToken) {
-            config.headers.Authorization = `Bearer ${accessToken}`;
+    async (config) => {
+        const method = (config.method || "get").toLowerCase();
+        const needsCsrfProtection = !SAFE_METHODS.has(method);
+        const isCsrfBootstrapRequest = config.url === API_PATHS.AUTH.CSRF_TOKEN;
+
+        if (needsCsrfProtection && !isCsrfBootstrapRequest) {
+            await ensureCsrfToken();
+            const csrfToken = getCsrfToken();
+
+            if (csrfToken) {
+                config.headers["X-CSRF-Token"] = csrfToken;
+            }
         }
+
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
-// Response Interceptor
 axiosInstance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        // Handle common error globally
-        if (error.response) {
-            if (error.response.status === 401) {
-            localStorage.removeItem("token");
-            // Redirect to login page
-            window.location.href = "/login";
-        } else if (error.response.status === 500) {
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+        
+        if (error.response?.status === 401 && !originalRequest?._retry) {
+            originalRequest._retry = true;
+            
+            try {
+                await ensureCsrfToken();
+
+                const csrfToken = getCsrfToken();
+
+                await axios.post(
+                    `${BASE_URL}${API_PATHS.AUTH.REFRESH_TOKEN}`,
+                    {},
+                    {
+                        withCredentials: true,
+                        headers: csrfToken ? { "X-CSRF-Token": csrfToken } : {},
+                    }
+                );
+                
+                return axiosInstance(originalRequest);
+            } catch (refreshError) {
+                if (
+                    window.location.pathname !== "/login" &&
+                    window.location.pathname !== "/signUp"
+                ) {
+                    window.location.href = "/login";
+                }
+                return Promise.reject(refreshError);
+            }
+        } else if (error.response?.status === 500) {
             console.log("Server error. Please try again later.");
+        } else if (error.code === "ECONNABORTED") {
+            console.log("Request timeout. Please try again.");
         }
-    } else if (error.code === "ECONNABORTED") {
-        console.log("Request timeout. Please try again.");
-    }
+        
         return Promise.reject(error);
     }
 );
