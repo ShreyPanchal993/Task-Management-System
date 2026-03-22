@@ -31,6 +31,16 @@ export const requireCsrfProtection = (req, res, next) => {
 
     const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
     const headerToken = req.get("X-CSRF-Token");
+    const requestOrigin = req.get("Origin") || "";
+    const allowedOrigins = (process.env.CLIENT_URL || "")
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
+    const isTrustedOrigin = requestOrigin && allowedOrigins.includes(requestOrigin);
+
+    if (headerToken && isTrustedOrigin && !cookieToken) {
+        return next();
+    }
 
     if (!cookieToken || !headerToken) {
         return res.status(403).json({
