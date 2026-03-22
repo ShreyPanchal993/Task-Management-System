@@ -24,10 +24,10 @@ const registerUser = async (req, res) => {
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,
         });
-        setCsrfCookie(res);
+        const csrfToken = setCsrfCookie(res);
 
         logger.info(`User registered: ${email}`);
-        return ApiSuccess.created(res, "User registered successfully", { user: response.user });
+        return ApiSuccess.created(res, "User registered successfully", { user: response.user, csrfToken });
     }catch(error){
         logger.error(`Registration failed: ${error.message}`);
         const apiError = ApiError.internal(error.message);
@@ -46,10 +46,10 @@ const loginUser = async (req, res) => {
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,
         });
-        setCsrfCookie(res);
+        const csrfToken = setCsrfCookie(res);
 
         logger.info(`User logged in: ${email}`);
-        return ApiSuccess.ok(res, "User logged in successfully", { user: response.user });
+        return ApiSuccess.ok(res, "User logged in successfully", { user: response.user, csrfToken });
     }catch(error){
         logger.error(`Login failed: ${error.message}`);
         const apiError = ApiError.internal(error.message);
@@ -124,10 +124,10 @@ const refreshToken = async (req, res) => {
             accessToken: response.accessToken,
             refreshToken: response.refreshToken,
         });
-        setCsrfCookie(res);
+        const csrfToken = setCsrfCookie(res);
         
         logger.info(`Token refreshed`);
-        return ApiSuccess.ok(res, "Token refreshed successfully");
+        return ApiSuccess.ok(res, "Token refreshed successfully", { csrfToken });
     }catch(error){
         clearAuthCookies(res);
         clearCsrfCookie(res);
