@@ -4,6 +4,8 @@ import logger from "../config/logger.js";
 import ApiSuccess from "../utils/ApiSuccess.js";
 import ApiError from "../utils/ApiError.js";
 import httpStatus from "http-status";
+import { clearAuthCookies, setAuthCookies } from "../utils/cookieOptions.js";
+import { clearCsrfCookie, setCsrfCookie } from "../utils/csrf.js";
 
 const registerUser = async (req, res) => {
     try{
@@ -19,15 +21,14 @@ const registerUser = async (req, res) => {
             }
         );
 
-        res.cookie('refreshToken', response.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+        setAuthCookies(res, {
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
         });
+        setCsrfCookie(res);
 
         logger.info(`User registered: ${email}`);
-        return ApiSuccess.created(res, "User registered successfully", { user: response.user, token: response.token });
+        return ApiSuccess.created(res, "User registered successfully", { user: response.user });
     }catch(error){
         logger.error(`Registration failed: ${error.message}`);
         const apiError = ApiError.internal(error.message);
@@ -42,15 +43,14 @@ const loginUser = async (req, res) => {
 
         const response = await authService.loginUser(email, password, deviceInfo);
 
-        res.cookie('refreshToken', response.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+        setAuthCookies(res, {
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
         });
+        setCsrfCookie(res);
 
         logger.info(`User logged in: ${email}`);
-        return ApiSuccess.ok(res, "User logged in successfully", { user: response.user, token: response.token });
+        return ApiSuccess.ok(res, "User logged in successfully", { user: response.user });
     }catch(error){
         logger.error(`Login failed: ${error.message}`);
         const apiError = ApiError.internal(error.message);
@@ -75,15 +75,14 @@ const getUserProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
     try{
         const userId = req.user.id;
-        const {name, email, profilePicture, password} = req.body;
+        const { name, email, profilePicture, currentPassword, newPassword } = req.body;
 
-        if(!userId){
-            await authService.getUserProfileById(userId);
+        if (!userId) {
             const apiError = ApiError.notFound("User not found");
             return res.status(apiError.statusCode).json(apiError);
         }
 
-        const updatedUser = await authService.updateUserProfile(userId, {name, email, profilePicture, password});
+        const updatedUser = await authService.updateUserProfile(userId, { name, email, profilePicture, currentPassword, newPassword });
 
         logger.info(`User profile updated: ${userId}`);
         return ApiSuccess.ok(res, "User profile updated successfully", updatedUser);
@@ -100,8 +99,9 @@ const logoutUser = async (req, res) => {
         if (refreshToken) {
             await authService.logoutUser(refreshToken);
         }
-        res.clearCookie('refreshToken');
-        logger.info(`User logged out: ${req.user.id}`);
+        clearAuthCookies(res);
+        clearCsrfCookie(res);
+        logger.info(`User logged out`);
         return ApiSuccess.ok(res, "User logged out successfully");
     }catch(error){
         logger.error(`Logout failed: ${error.message}`);
@@ -121,17 +121,17 @@ const refreshToken = async (req, res) => {
         
         const response = await authService.refreshAccessToken(refreshToken);
         
-        res.cookie('refreshToken', response.refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+        setAuthCookies(res, {
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
         });
+        setCsrfCookie(res);
         
         logger.info(`Token refreshed`);
-        return ApiSuccess.ok(res, "Token refreshed successfully", { token: response.token });
+        return ApiSuccess.ok(res, "Token refreshed successfully");
     }catch(error){
-        res.clearCookie('refreshToken');
+        clearAuthCookies(res);
+        clearCsrfCookie(res);
         logger.error(`Token refresh failed: ${error.message}`);
         const apiError = ApiError.forbidden("Invalid or expired refresh token");
         return res.status(apiError.statusCode).json(apiError);

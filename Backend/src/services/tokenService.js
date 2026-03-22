@@ -1,5 +1,8 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { Token } from "../models/Token.js";
+
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
 
 export const generateToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "15m" });
@@ -13,15 +16,16 @@ export const saveRefreshToken = async (userId, refreshToken, deviceInfo = "unkno
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await Token.findOneAndUpdate(
         { userId, deviceInfo },
-        { refreshToken, expiresAt },
+        { refreshToken: hashToken(refreshToken), expiresAt },
         { upsert: true, new: true }
     );
 };
 
 export const verifyRefreshToken = async (refreshToken) => {
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const hashedRefreshToken = hashToken(refreshToken);
     
-    const tokenDoc = await Token.findOne({ refreshToken });
+    const tokenDoc = await Token.findOne({ refreshToken: hashedRefreshToken });
     if (!tokenDoc) throw new Error("Refresh token not found or already used");
     if (tokenDoc.userId.toString() !== decoded.id) throw new Error("Token mismatch");
     
@@ -29,7 +33,7 @@ export const verifyRefreshToken = async (refreshToken) => {
 };
 
 export const deleteRefreshToken = async (refreshToken) => {
-    await Token.findOneAndDelete({ refreshToken });
+    await Token.findOneAndDelete({ refreshToken: hashToken(refreshToken) });
 };
 
 export const deleteAllUserTokens = async (userId) => {
@@ -40,8 +44,8 @@ export const rotateRefreshToken = async (oldRefreshToken, newRefreshToken, userI
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     
     const result = await Token.findOneAndUpdate(
-        { refreshToken: oldRefreshToken, userId },
-        { refreshToken: newRefreshToken, expiresAt, deviceInfo },
+        { refreshToken: hashToken(oldRefreshToken), userId },
+        { refreshToken: hashToken(newRefreshToken), expiresAt, deviceInfo },
         { new: true }
     );
 

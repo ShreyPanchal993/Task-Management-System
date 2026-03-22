@@ -1,4 +1,5 @@
 import * as taskRepository from '../repositories/taskRepository.js';
+import { normalizeTaskInput } from "../utils/inputSecurity.js";
 
 const getTasks = async (user, filter = {}) => { 
     const tasks = await taskRepository.getTasks(user, filter);
@@ -11,23 +12,26 @@ const getTaskById = async (taskId) => {
 };
 
 const createTask = async (taskData) => { 
-    const newTask = await taskRepository.createTask(taskData);
+    const normalizedTaskData = normalizeTaskInput(taskData);
+    const newTask = await taskRepository.createTask(normalizedTaskData);
     return newTask;
 }; 
 
 const updateTask = async (task, taskData, user) => { 
-    task.title = taskData.title || task.title;
-    task.description = taskData.description || task.description;
-    task.priority = taskData.priority || task.priority;
-    task.dueDate = taskData.dueDate || task.dueDate;
-    task.todoChecklist = taskData.todoChecklist || task.todoChecklist;
-    task.attachments = taskData.attachments || task.attachments;
+    const normalizedTaskData = normalizeTaskInput(taskData);
 
-    if (taskData.assignedTo) {
-        if (!Array.isArray(taskData.assignedTo)) {
+    task.title = normalizedTaskData.title || task.title;
+    task.description = normalizedTaskData.description || task.description;
+    task.priority = normalizedTaskData.priority || task.priority;
+    task.dueDate = normalizedTaskData.dueDate || task.dueDate;
+    task.todoChecklist = normalizedTaskData.todoChecklist || task.todoChecklist;
+    task.attachments = normalizedTaskData.attachments || task.attachments;
+
+    if (normalizedTaskData.assignedTo) {
+        if (!Array.isArray(normalizedTaskData.assignedTo)) {
             throw new Error('assignedTo must be an array of user IDs');
         }
-        task.assignedTo = taskData.assignedTo;
+        task.assignedTo = normalizedTaskData.assignedTo;
     }
 
     const updatedTask = await taskRepository.updateTask(task);
@@ -56,10 +60,11 @@ const updateTaskStatus = async (task, status, user) => {
 };
 
 const updateTaskChecklist = async (task, todoChecklist) => { 
-    task.todoChecklist = todoChecklist;
+    const normalizedChecklist = normalizeTaskInput({ todoChecklist }).todoChecklist;
+    task.todoChecklist = normalizedChecklist;
 
-    const completedCount = todoChecklist.filter(item => item.completed).length;
-    const totalItems = todoChecklist.length;
+    const completedCount = normalizedChecklist.filter(item => item.completed).length;
+    const totalItems = normalizedChecklist.length;
     task.progress = totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
 
     if (task.progress === 100) {
