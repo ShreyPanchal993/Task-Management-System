@@ -1,4 +1,4 @@
-# Task Management System
+# Trackora
 
 A full-stack task management application with role-based access control, real-time task tracking, and comprehensive reporting features.
 
