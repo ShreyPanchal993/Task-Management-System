@@ -73,7 +73,7 @@ const CreateTask = () => {
 
       clearData();
     } catch (error) {
-      console.error("Error creating task:", error);
+      toast.error(error.response?.data?.message || "Failed to create task.");
       setLoading(false);
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ const CreateTask = () => {
 
       toast.success("Task updated successfully!");
     } catch (error) {
-      console.error("Error creating task:", error);
+      toast.error(error.response?.data?.message || "Failed to update task.");
       setLoading(false);
     } finally {
       setLoading(false)
@@ -167,7 +167,7 @@ const CreateTask = () => {
         })) 
       }
     } catch (error) {
-      console.error("Error fetching task:", error)
+      toast.error(error.response?.data?.message || "Failed to load task details.");
     }
   };
 
@@ -180,7 +180,7 @@ const CreateTask = () => {
       toast.success("Expense details deleted successfully");
       navigate("/admin/tasks");
     } catch (error) {
-      console.error("Error deleting task:", error.response?.data?.message || error.message);
+      toast.error(error.response?.data?.message || "Failed to delete task.");
     }
   };
 

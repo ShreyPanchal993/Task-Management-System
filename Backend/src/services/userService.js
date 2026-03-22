@@ -11,4 +11,18 @@ const getUserById = async (userId) => {
     return user;
 };
 
-export {getUsers, getUserById};
+const updateUserRole = async (actor, userId, role) => {
+    const targetUser = await userRepository.getUserById(userId);
+
+    if (targetUser.role === "super_admin") {
+        throw new Error("Super admin role cannot be modified");
+    }
+
+    if (targetUser._id.toString() === actor.id.toString()) {
+        throw new Error("You cannot change your own role");
+    }
+
+    return userRepository.updateUserRole(userId, role);
+};
+
+export {getUsers, getUserById, updateUserRole};

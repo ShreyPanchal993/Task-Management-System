@@ -1,6 +1,10 @@
 import React from 'react'
 
-const UserCard = ({ userInfo }) => {
+const UserCard = ({ userInfo, canManageRoles = false, isUpdatingRole = false, onRoleChange }) => {
+    const roleBadgeClassName = userInfo?.role === "admin"
+        ? "bg-blue-100/80 text-blue-700"
+        : "bg-slate-100/80 text-slate-600";
+
     return (
         <div className="user-card">
             <div className="flex items-center justify-between">
@@ -15,6 +19,10 @@ const UserCard = ({ userInfo }) => {
                         <p className="text-xs text-slate-500">{userInfo?.email}</p>
                     </div>
                 </div>
+
+                <span className={`rounded-full px-3 py-1 text-[11px] font-semibold capitalize ${roleBadgeClassName}`}>
+                    {userInfo?.role?.replace("_", " ") || "member"}
+                </span>
             </div>
 
             <div className="flex items-end gap-3 mt-5">
@@ -34,6 +42,27 @@ const UserCard = ({ userInfo }) => {
                     status="Completed"
                 />
             </div>
+
+            {canManageRoles && (
+                <div className="mt-5 rounded-2xl border border-slate-200/70 bg-white/70 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Access</p>
+                            <p className="mt-1 text-sm text-slate-600">Promote or demote this user without exposing public admin signup.</p>
+                        </div>
+
+                        <select
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                            value={userInfo?.role || "member"}
+                            onChange={(e) => onRoleChange?.(userInfo?._id, e.target.value)}
+                            disabled={isUpdatingRole}
+                        >
+                            <option value="member">Member</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

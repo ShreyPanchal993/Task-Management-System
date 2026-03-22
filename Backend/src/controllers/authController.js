@@ -9,15 +9,14 @@ import { clearCsrfCookie, setCsrfCookie } from "../utils/csrf.js";
 
 const registerUser = async (req, res) => {
     try{
-        const { name, email, password, profilePicture, adminInviteToken } = req.body;
+        const { name, email, password, profilePicture } = req.body;
     
         const response = await authService.registerUser(
             {
                 name, 
                 email, 
                 password, 
-                profilePicture, 
-                adminInviteToken 
+                profilePicture,
             }
         );
 
