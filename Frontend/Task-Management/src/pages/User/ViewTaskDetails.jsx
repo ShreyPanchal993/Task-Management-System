@@ -1,14 +1,15 @@
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import moment from 'moment';
 import AvatarGroup from '../../components/AvatarGroup';
-import { LuSquareArrowOutUpRight } from 'react-icons/lu';
+import { LuSquareArrowOutUpRight, LuX } from 'react-icons/lu';
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [task, setTask] = useState(null);
 
   const getStatusTagColor = (status) => {
@@ -29,12 +30,12 @@ const ViewTaskDetails = () => {
     try{
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_TASK_BY_ID(id));
 
-      if (response.data) {
-        const taskInfo = response.data;
+      if (response.data?.data) {
+        const taskInfo = response.data.data;
         setTask(taskInfo);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching task:", error);
     }
   };
 
@@ -53,7 +54,7 @@ const ViewTaskDetails = () => {
       });
 
       if (response.status === 200) {
-        setTask(response.data?.task || task);
+        setTask(response.data?.data || task);
       } else {
         // Optionally revert the toggle if the API call fails.
         todoChecklist[index].completed = !todoChecklist[index]?.completed;
@@ -87,11 +88,20 @@ const ViewTaskDetails = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-sm md:text-xl font-medium">{task?.title}</h2>
 
-                <div className={`text-[11px] md:text-[13px] font-medium ${getStatusTagColor(
-                  task?.status
-                  )} px-4 py-0.5 rounded`}
-                >
-                  {task?.status}
+                <div className="flex items-center gap-3">
+                  <div className={`text-[11px] md:text-[13px] font-medium ${getStatusTagColor(
+                    task?.status
+                    )} px-4 py-0.5 rounded`}
+                  >
+                    {task?.status}
+                  </div>
+                  
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <LuX className="text-xl text-gray-600" />
+                  </button>
                 </div>
               </div>
 

@@ -1,73 +1,74 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import * as tokens from "./tokenService.js";
 import * as authRepository from "../repositories/authRepository.js";
 
 const registerUser = async (userDetails) => {
-    try{
-        const {password, adminInviteToken} = userDetails;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+    const {password, adminInviteToken} = userDetails;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Determine Role
-        const role = tokens.roleDetermine(adminInviteToken);
+    const role = tokens.roleDetermine(adminInviteToken);
+    const user = await authRepository.registerUser({...userDetails, password: hashedPassword, role});
 
-        // Register User in DB
-        const user = await authRepository.registerUser({...userDetails, password: hashedPassword, role});
+    const token = tokens.generateToken(user.id);
+    const refreshToken = tokens.generateRefreshToken(user.id);
 
-        // Generate JWT Token
-        const token = tokens.generateToken(user.id);
+    await tokens.saveRefreshToken(user.id, refreshToken);
 
-        return { user, token };
-    } catch(error){
-        throw new Error (error.message);
-    }
+    return { user, token, refreshToken };
 };
 
-const loginUser = async (email, password) => {
-    try{
-        const user = await authRepository.loginUser(email, password);
+const loginUser = async (email, password, deviceInfo) => {
+    const user = await authRepository.loginUser(email, password);
 
-        // Generate JWT Token
-        const token = tokens.generateToken(user.id);
-        return { user, token };
-    } catch(error){
-        throw new Error (error.message);
-    }
+    const token = tokens.generateToken(user.id);
+    const refreshToken = tokens.generateRefreshToken(user.id);
+
+    await tokens.saveRefreshToken(user.id, refreshToken, deviceInfo);
+
+    return { user, token, refreshToken };
 }
 
 const getUserProfile = async (userId) => {
-    try{
-        const user = await authRepository.getUserProfile(userId);
-        return user;
-    } catch(error){
-        throw new Error (error.message);
-    }
+    const user = await authRepository.getUserProfile(userId);
+    return user;
 };
 
 const updateUserProfile = async (userId, userData) => {
-    try{
-        const {name, email, profilePicture, password} = userData;
+    const {name, email, profilePicture, password} = userData;
 
-        const updatedData = {
-            name: name,
-            email: email,
-            profilePicture: profilePicture
-        };
+    const updatedData = { name, email, profilePicture };
 
-        if(password){
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            updatedData.password = hashedPassword;
-        }
-
-        const user = await authRepository.updateUserProfileById(userId, updatedData);
-        
-        const token = tokens.generateToken(user.id);
-        return user;
-    } catch(error){
-        throw new Error (error.message);
+    if(password){
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        updatedData.password = hashedPassword;
     }
+
+    const user = await authRepository.updateUserProfileById(userId, updatedData);
+    
+    const token = tokens.generateToken(user.id);
+    return user;
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile };
+const logoutUser = async (refreshToken) => {
+    await tokens.deleteRefreshToken(refreshToken);
+};
+
+const logoutAllDevices = async (userId) => {
+    await tokens.deleteAllUserTokens(userId);
+};
+
+const refreshAccessToken = async (refreshToken) => {
+    const { decoded } = await tokens.verifyRefreshToken(refreshToken);
+    
+    await tokens.deleteRefreshToken(refreshToken);
+    const newRefreshToken = tokens.generateRefreshToken(decoded.id);
+    await tokens.saveRefreshToken(decoded.id, newRefreshToken);
+    
+    return { token: tokens.generateToken(decoded.id), refreshToken: newRefreshToken };
+};
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, logoutAllDevices, refreshAccessToken };

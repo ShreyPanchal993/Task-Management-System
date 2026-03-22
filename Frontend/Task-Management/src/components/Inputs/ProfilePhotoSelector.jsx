@@ -1,17 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
 
-const ProfilePhotoSelector = ({image, setImage}) => {
+const ProfilePhotoSelector = ({image, setImage, existingImageUrl}) => {
     const inputRef = useRef(null);
-    const [previewUrl, setPreviewUrl] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(existingImageUrl || null);
+
+    useEffect(() => {
+        if (existingImageUrl) {
+            setPreviewUrl(existingImageUrl);
+        }
+    }, [existingImageUrl]);
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
         if (file) {
-            // Update the image state 
             setImage(file);
-
-            // Generate preview URL from the file 
             const preview = URL.createObjectURL(file);
             setPreviewUrl(preview); 
         }
@@ -19,7 +22,7 @@ const ProfilePhotoSelector = ({image, setImage}) => {
 
     const handleRemoveImage = () => {
         setImage(null);
-        setPreviewUrl(null);
+        setPreviewUrl(existingImageUrl || null);
     };
 
     const onChooseFile = () => {
@@ -35,7 +38,7 @@ const ProfilePhotoSelector = ({image, setImage}) => {
             className="hidden"
         />
 
-        {!image ? (
+        {!previewUrl ? (
             <div className="w-20 h-20 flex items-center justify-center bg-blue-100/50 rounded-full relative cursor-pointer">
                 <LuUser className="text-4xl text-primary" />
                 <button 
