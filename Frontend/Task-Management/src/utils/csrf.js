@@ -1,21 +1,33 @@
 import axios from "axios";
 import { BASE_URL, API_PATHS } from "./apiPaths";
 
-const CSRF_COOKIE_NAME = "csrfToken";
+const CSRF_STORAGE_KEY = "csrfToken";
 
-const readCookie = (name) => {
-  if (typeof document === "undefined") {
-    return "";
+let csrfTokenCache = "";
+
+export const setCsrfToken = (token) => {
+  csrfTokenCache = token || "";
+
+  if (typeof window !== "undefined") {
+    if (csrfTokenCache) {
+      window.sessionStorage.setItem(CSRF_STORAGE_KEY, csrfTokenCache);
+    } else {
+      window.sessionStorage.removeItem(CSRF_STORAGE_KEY);
+    }
   }
-
-  const cookieEntry = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${name}=`));
-
-  return cookieEntry ? decodeURIComponent(cookieEntry.split("=")[1]) : "";
 };
 
-export const getCsrfToken = () => readCookie(CSRF_COOKIE_NAME);
+export const getCsrfToken = () => {
+  if (csrfTokenCache) {
+    return csrfTokenCache;
+  }
+
+  if (typeof window !== "undefined") {
+    csrfTokenCache = window.sessionStorage.getItem(CSRF_STORAGE_KEY) || "";
+  }
+
+  return csrfTokenCache;
+};
 
 export const ensureCsrfToken = async () => {
   const existingToken = getCsrfToken();
@@ -24,9 +36,11 @@ export const ensureCsrfToken = async () => {
     return existingToken;
   }
 
-  await axios.get(`${BASE_URL}${API_PATHS.AUTH.CSRF_TOKEN}`, {
+  const response = await axios.get(`${BASE_URL}${API_PATHS.AUTH.CSRF_TOKEN}`, {
     withCredentials: true,
   });
 
-  return getCsrfToken();
+  const csrfToken = response.data?.data?.csrfToken || "";
+  setCsrfToken(csrfToken);
+  return csrfToken;
 };
