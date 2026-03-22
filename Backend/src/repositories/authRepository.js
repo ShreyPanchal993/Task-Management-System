@@ -75,4 +75,14 @@ const updateUserProfileById = async (userId, updateData) => {
     }
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfileById };
+const getUserWithPassword = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) throw new Error('User not found');
+        return user;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+export { registerUser, loginUser, getUserProfile, getUserWithPassword, updateUserProfileById };

@@ -3,32 +3,38 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import * as tokens from "./tokenService.js";
 import * as authRepository from "../repositories/authRepository.js";
+import { normalizeProfileUpdateInput, normalizeUserInput } from "../utils/inputSecurity.js";
 
 const registerUser = async (userDetails) => {
-    const {password, adminInviteToken} = userDetails;
+    const { password, adminInviteToken, ...restUserDetails } = userDetails;
+    const normalizedUser = normalizeUserInput({ ...restUserDetails, adminInviteToken });
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const role = tokens.roleDetermine(adminInviteToken);
-    const user = await authRepository.registerUser({...userDetails, password: hashedPassword, role});
+    const role = tokens.roleDetermine(normalizedUser.adminInviteToken);
+    const user = await authRepository.registerUser({
+        ...normalizedUser,
+        password: hashedPassword,
+        role,
+    });
 
-    const token = tokens.generateToken(user.id);
+    const accessToken = tokens.generateToken(user.id);
     const refreshToken = tokens.generateRefreshToken(user.id);
 
     await tokens.saveRefreshToken(user.id, refreshToken);
 
-    return { user, token, refreshToken };
+    return { user, accessToken, refreshToken };
 };
 
 const loginUser = async (email, password, deviceInfo) => {
-    const user = await authRepository.loginUser(email, password);
+    const user = await authRepository.loginUser(email?.trim().toLowerCase(), password);
 
-    const token = tokens.generateToken(user.id);
+    const accessToken = tokens.generateToken(user.id);
     const refreshToken = tokens.generateRefreshToken(user.id);
 
     await tokens.saveRefreshToken(user.id, refreshToken, deviceInfo);
 
-    return { user, token, refreshToken };
+    return { user, accessToken, refreshToken };
 }
 
 const getUserProfile = async (userId) => {
@@ -37,19 +43,21 @@ const getUserProfile = async (userId) => {
 };
 
 const updateUserProfile = async (userId, userData) => {
-    const {name, email, profilePicture, password} = userData;
+    const { name, email, profilePicture, currentPassword, newPassword } = userData;
 
-    const updatedData = { name, email, profilePicture };
+    const updatedData = normalizeProfileUpdateInput({ name, email, profilePicture });
 
-    if(password){
+    if (newPassword) {
+        const user = await authRepository.getUserWithPassword(userId);
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            throw new Error('Current password is incorrect.');
+        }
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        updatedData.password = hashedPassword;
+        updatedData.password = await bcrypt.hash(newPassword, salt);
     }
 
     const user = await authRepository.updateUserProfileById(userId, updatedData);
-    
-    const token = tokens.generateToken(user.id);
     return user;
 };
 
@@ -68,7 +76,7 @@ const refreshAccessToken = async (refreshToken) => {
     const newRefreshToken = tokens.generateRefreshToken(decoded.id);
     await tokens.saveRefreshToken(decoded.id, newRefreshToken);
     
-    return { token: tokens.generateToken(decoded.id), refreshToken: newRefreshToken };
+    return { accessToken: tokens.generateToken(decoded.id), refreshToken: newRefreshToken };
 };
 
 export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, logoutAllDevices, refreshAccessToken };
