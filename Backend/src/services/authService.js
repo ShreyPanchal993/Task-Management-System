@@ -1,73 +1,82 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import * as tokens from "./tokenService.js";
 import * as authRepository from "../repositories/authRepository.js";
+import { normalizeProfileUpdateInput, normalizeUserInput } from "../utils/inputSecurity.js";
 
 const registerUser = async (userDetails) => {
-    try{
-        const {password, adminInviteToken} = userDetails;
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+    const { password, adminInviteToken, ...restUserDetails } = userDetails;
+    const normalizedUser = normalizeUserInput({ ...restUserDetails, adminInviteToken });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Determine Role
-        const role = tokens.roleDetermine(adminInviteToken);
+    const role = tokens.roleDetermine(normalizedUser.adminInviteToken);
+    const user = await authRepository.registerUser({
+        ...normalizedUser,
+        password: hashedPassword,
+        role,
+    });
 
-        // Register User in DB
-        const user = await authRepository.registerUser({...userDetails, password: hashedPassword, role});
+    const accessToken = tokens.generateToken(user.id);
+    const refreshToken = tokens.generateRefreshToken(user.id);
 
-        // Generate JWT Token
-        const token = tokens.generateToken(user.id);
+    await tokens.saveRefreshToken(user.id, refreshToken);
 
-        return { user, token };
-    } catch(error){
-        throw new Error (error.message);
-    }
+    return { user, accessToken, refreshToken };
 };
 
-const loginUser = async (email, password) => {
-    try{
-        const user = await authRepository.loginUser(email, password);
+const loginUser = async (email, password, deviceInfo) => {
+    const user = await authRepository.loginUser(email?.trim().toLowerCase(), password);
 
-        // Generate JWT Token
-        const token = tokens.generateToken(user.id);
-        return { user, token };
-    } catch(error){
-        throw new Error (error.message);
-    }
+    const accessToken = tokens.generateToken(user.id);
+    const refreshToken = tokens.generateRefreshToken(user.id);
+
+    await tokens.saveRefreshToken(user.id, refreshToken, deviceInfo);
+
+    return { user, accessToken, refreshToken };
 }
 
 const getUserProfile = async (userId) => {
-    try{
-        const user = await authRepository.getUserProfile(userId);
-        return user;
-    } catch(error){
-        throw new Error (error.message);
-    }
+    const user = await authRepository.getUserProfile(userId);
+    return user;
 };
 
 const updateUserProfile = async (userId, userData) => {
-    try{
-        const {name, email, profilePicture, password} = userData;
+    const { name, email, profilePicture, currentPassword, newPassword } = userData;
 
-        const updatedData = {
-            name: name,
-            email: email,
-            profilePicture: profilePicture
-        };
+    const updatedData = normalizeProfileUpdateInput({ name, email, profilePicture });
 
-        if(password){
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            updatedData.password = hashedPassword;
+    if (newPassword) {
+        const user = await authRepository.getUserWithPassword(userId);
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            throw new Error('Current password is incorrect.');
         }
-
-        const user = await authRepository.updateUserProfileById(userId, updatedData);
-        
-        const token = tokens.generateToken(user.id);
-        return user;
-    } catch(error){
-        throw new Error (error.message);
+        const salt = await bcrypt.genSalt(10);
+        updatedData.password = await bcrypt.hash(newPassword, salt);
     }
+
+    const user = await authRepository.updateUserProfileById(userId, updatedData);
+    return user;
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile };
+const logoutUser = async (refreshToken) => {
+    await tokens.deleteRefreshToken(refreshToken);
+};
+
+const logoutAllDevices = async (userId) => {
+    await tokens.deleteAllUserTokens(userId);
+};
+
+const refreshAccessToken = async (refreshToken) => {
+    const { decoded } = await tokens.verifyRefreshToken(refreshToken);
+    
+    await tokens.deleteRefreshToken(refreshToken);
+    const newRefreshToken = tokens.generateRefreshToken(decoded.id);
+    await tokens.saveRefreshToken(decoded.id, newRefreshToken);
+    
+    return { accessToken: tokens.generateToken(decoded.id), refreshToken: newRefreshToken };
+};
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, logoutAllDevices, refreshAccessToken };

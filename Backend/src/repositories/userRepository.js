@@ -7,9 +7,9 @@ const getUsers = async (userId) => {
 
             // Add task count for each user
             const usersWithTaskCount = await Promise.all(users.map(async (user) => {
-                const pendingTasks = await Task.countDocuments({assignedTo: user._id, status: 'pending'});
-                const inProgressTasks = await Task.countDocuments({assignedTo: user._id, status: 'in-progress'});
-                const completedTasks = await Task.countDocuments({assignedTo: user._id, status: 'completed'});
+                const pendingTasks = await Task.countDocuments({assignedTo: user._id, status: 'Pending'});
+                const inProgressTasks = await Task.countDocuments({assignedTo: user._id, status: 'In Progress'});
+                const completedTasks = await Task.countDocuments({assignedTo: user._id, status: 'Completed'});
                 return {
                     ...user._doc, 
                     pendingTasks: pendingTasks, 
@@ -26,18 +26,14 @@ const getUsers = async (userId) => {
 
 const getUserById = async (userId) => {
     try{
-        return await User.findById(userId);
+        const user = await User.findById(userId).select('-password');
+        if (!user){
+            throw new Error("User not found");
+        }
+        return user;
     } catch(error){
         throw new Error(error.message);
     }
 };
 
-const deleteUser = async (userId) => {
-    try{
-        return await User.findByIdAndDelete(userId);
-    } catch(error){
-        throw new Error(error.message);
-    }
-};
-
-export {getUsers, getUserById, deleteUser};
+export {getUsers, getUserById};
