@@ -3,6 +3,9 @@ import { BASE_URL, API_PATHS } from "./apiPaths";
 import { ensureCsrfToken, getCsrfToken } from "./csrf";
 
 const SAFE_METHODS = new Set(["get", "head", "options"]);
+const PUBLIC_PATHS = new Set(["/", "/login", "/signUp"]);
+
+const isPublicPath = (pathname = "") => PUBLIC_PATHS.has(pathname);
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
@@ -38,6 +41,13 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const currentPath = window.location.pathname;
+        const isProfileBootstrapRequest = originalRequest?.url === API_PATHS.AUTH.GET_PROFILE;
+        const isOnPublicRoute = isPublicPath(currentPath);
+
+        if (isProfileBootstrapRequest && isOnPublicRoute && error.response?.status === 401) {
+            return Promise.reject(error);
+        }
         
         if (error.response?.status === 401 && !originalRequest?._retry) {
             originalRequest._retry = true;
@@ -58,11 +68,8 @@ axiosInstance.interceptors.response.use(
                 
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                if (
-                    window.location.pathname !== "/login" &&
-                    window.location.pathname !== "/signUp"
-                ) {
-                    window.location.href = "/login";
+                if (!isOnPublicRoute) {
+                    window.location.href = "/";
                 }
                 return Promise.reject(refreshError);
             }
