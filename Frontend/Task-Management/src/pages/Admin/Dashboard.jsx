@@ -87,12 +87,17 @@ const Dashboard = () => {
       {loading ? <LoadingSpinner /> : (
       <>
       <div className="card my-5 animate-slide-up stagger-1">
-        <div>
+        <div className="page-header mb-0">
           <div className="col-span-3"> 
-            <h2 className="text-xl md:text-2xl">{getGreeting()}! {user?.name}</h2>
-            <p className="text-xs md:text-[13px] text-gray-400 mt-1.5">
+            <p className="soft-label">Overview</p>
+            <h2 className="page-title mt-2">{getGreeting()}, {user?.name}</h2>
+            <p className="page-subtitle mt-2">
               {moment().format("dddd Do MMMM YYYY")}
             </p>
+          </div>
+
+          <div className="rounded-[24px] border px-4 py-3 text-sm text-slate-600" style={{ background: "rgba(255,255,255,0.58)", borderColor: "var(--border-soft)" }}>
+            Delivery health, workload, and recent activity in one place.
           </div>
         </div>
         
@@ -135,7 +140,7 @@ const Dashboard = () => {
         <div className="animate-slide-up stagger-2">
           <div className="card">
             <div className="flex items-center justify-between">
-              <h5 className="font-medium">Task Distribution</h5>
+              <h5 className="font-semibold text-slate-900">Task Distribution</h5>
             </div>
 
             <CustomPieChart 
@@ -148,7 +153,7 @@ const Dashboard = () => {
         <div className="animate-slide-up stagger-3">
           <div className="card">
             <div className="flex items-center justify-between">
-              <h5 className="font-medium">Task Priority Levels</h5>
+              <h5 className="font-semibold text-slate-900">Task Priority Levels</h5>
             </div>
 
             <CustomBarChart 
@@ -163,7 +168,7 @@ const Dashboard = () => {
         <div className="md:col-span-2 animate-slide-up stagger-4">
           <div className="card">
             <div className="flex items-center justify-between">
-              <h5 className="text-lg">Recent Tasks</h5>
+              <h5 className="text-lg font-semibold text-slate-900">Recent Tasks</h5>
               <button className="card-btn" onClick={onSeeMore}>
                 See All <LuArrowRight className="text-base" />
               </button>

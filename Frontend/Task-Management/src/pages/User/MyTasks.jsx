@@ -3,10 +3,8 @@ import DashboardLayout from '../../components/layouts/DashboardLayout'
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
-import { LuFileSpreadsheet } from 'react-icons/lu';
 import TaskStatusTabs from '../../components/TaskStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
-import toast from 'react-hot-toast';
 
 const MyTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
@@ -54,8 +52,11 @@ const MyTasks = () => {
   return (
     <DashboardLayout activeMenu="My Tasks">
       <div className="my-5 animate-slide-down">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-            <h2 className="text-xl md:text-xl font-medium">My Tasks</h2>
+        <div className="page-header">
+            <div>
+              <p className="soft-label">Assignments</p>
+              <h2 className="page-title mt-2">My Tasks</h2>
+            </div>
 
           {tabs?.[0]?.count > 0 && (
               <TaskStatusTabs 

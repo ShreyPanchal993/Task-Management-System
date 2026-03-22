@@ -8,18 +8,18 @@ import { HiChevronLeft } from 'react-icons/hi';
 
 const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
     const { user, clearUser } = useContext(UserContext);
-    const [ sideMenuData, setSideMenuData ] = useState([]);
+    const [sideMenuData, setSideMenuData] = useState([]);
 
     const navigate = useNavigate();
 
     const handleClick = (route) => {
-        if (route === "logout"){
+        if (route === "logout") {
             handleLogout();
             return;
         }
 
         navigate(route);
-    }
+    };
     
     const handleLogout = async () => {
         try {
@@ -27,72 +27,92 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
         } catch (error) {
             console.error('Logout error:', error);
         } finally {
-            localStorage.clear();
             clearUser();
             navigate("/login");
         }
-    }
+    };
 
     useEffect(() => {
-        if(user){
+        if (user) {
             setSideMenuData(user?.role === "admin" ? SIDE_MENU_DATA : SIDE_MENU_USER_DATA);
         }
-        return () => {};
     }, [user]);
 
     return (
-        <div className={`${isCollapsed ? 'w-20' : 'w-64'} h-[calc(100vh-61px)] bg-white border-r border-gray-200/50 sticky top-[61px] z-20 transition-all duration-300`}>
+        <div
+            className={`${isCollapsed ? 'w-20' : 'w-72'} h-[calc(100vh-77px)] rounded-[28px] border sticky top-[85px] z-20 transition-all duration-300 ml-4`}
+            style={{
+                background: 'linear-gradient(180deg, rgba(255, 253, 248, 0.88) 0%, rgba(255, 255, 255, 0.72) 100%)',
+                borderColor: 'rgba(148, 163, 184, 0.14)',
+                boxShadow: '0 18px 40px rgba(15, 23, 42, 0.08)',
+            }}
+        >
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-5 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors z-30"
+                className="absolute -right-3 top-5 w-7 h-7 text-white rounded-full flex items-center justify-center z-30"
+                style={{ background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)' }}
             >
                 <HiChevronLeft className={`text-sm transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
             </button>
 
-            <div className="flex flex-col items-center justify-center mb-7 pt-5">
+            <div className="flex flex-col items-center justify-center mb-7 pt-7 px-4">
                 <div className="relative">
                     <img
                         src={user?.profilePicture || "https://via.placeholder.com/80"}
                         alt="Profile Image"
-                        className={`${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} bg-slate-400 rounded-full object-cover transition-all duration-300`}
-                        onError={(e) => { e.target.src = "https://via.placeholder.com/80"; }}
+                        className={`${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} rounded-full object-cover transition-all duration-300 ring-4 ring-white/80`}
+                        style={{ backgroundColor: '#cbd5e1' }}
+                        onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/80";
+                        }}
                     />
                 </div>
 
                 {!isCollapsed && (
                     <>
                         {user?.role === "admin" && (
-                            <div className="text-[10px] font-medium text-white bg-primary px-3 py-0.5 rounded mt-1">
+                            <div
+                                className="text-[10px] font-semibold text-white px-3 py-1 rounded-full mt-2"
+                                style={{ background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)' }}
+                            >
                                 Admin
                             </div>
                         )}
 
-                        <h5 className="text-gray-950 font-medium leading-6 mt-3">
+                        <h5 className="text-slate-950 font-semibold leading-6 mt-4">
                             {user?.name || ""}
                         </h5>
 
-                        <p className="text-[12px] text-gray-500">{user?.email || ""}</p>
+                        <p className="text-[12px] text-slate-500 text-center">{user?.email || ""}</p>
                     </>
                 )}
             </div>
 
-            {sideMenuData.map((item, index) => (
-                <button
-                    key={`menu_${index}`}
-                    className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'gap-4'} text-[15px] ${
-                        activeMenu == item.label
-                            ? "text-primary bg-linear-to-r from-blue-50/40 to-blue-100/50 border-r-3"
-                            : ""
-                        } py-3 ${isCollapsed ? 'px-0' : 'px-6'} mb-3 cursor-pointer transition-all duration-300`}
-                    onClick={() => handleClick(item.path)}
-                    title={isCollapsed ? item.label : ''}
-                >
-                    <item.icon className="text-xl" />
-                    {!isCollapsed && item.label}
-                </button>
-            ))}
+            <div className="px-3">
+                {sideMenuData.map((item, index) => (
+                    <button
+                        key={`menu_${index}`}
+                        className={`w-full flex items-center rounded-2xl ${isCollapsed ? 'justify-center' : 'gap-4'} text-[15px] py-3 ${isCollapsed ? 'px-0' : 'px-4'} mb-2.5 cursor-pointer transition-all duration-300 ${
+                            activeMenu == item.label
+                                ? 'text-white shadow-lg'
+                                : 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
+                        }`}
+                        style={activeMenu == item.label
+                            ? {
+                                background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)',
+                                boxShadow: '0 14px 24px rgba(40, 80, 217, 0.22)',
+                            }
+                            : undefined}
+                        onClick={() => handleClick(item.path)}
+                        title={isCollapsed ? item.label : ''}
+                    >
+                        <item.icon className="text-xl" />
+                        {!isCollapsed && item.label}
+                    </button>
+                ))}
+            </div>
         </div>
-    )
+    );
 }
 
 export default SideMenu

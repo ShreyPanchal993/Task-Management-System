@@ -199,13 +199,16 @@ const CreateTask = () => {
           <div className="form-card w-full max-w-4xl">
 
             <div className="flex item-center justify-between">
-              <h2 className="text-xl md:text-2xl font-semibold">
+              <div>
+                <p className="soft-label">{taskId ? "Task Editor" : "New Task"}</p>
+                <h2 className="text-xl md:text-2xl font-semibold mt-2">
                 {taskId ? "Update Task" : "Create Task"}
-              </h2>
+                </h2>
+              </div>
 
               {taskId && (
                 <button 
-                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-500 bg-rose-50 rounded px-3 py-2 border border-rose-100 hover:border-rose-300 hover:bg-rose-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-700 bg-rose-100/70 rounded-full px-4 py-2 border border-rose-200 hover:border-rose-300 hover:bg-rose-100 transition-colors cursor-pointer"
                   onClick={() => setOpenDeleteAlert(true)}
                 >
                   <LuTrash2 className="text-base" /> Delete
@@ -214,9 +217,9 @@ const CreateTask = () => {
             </div>
 
               <div className="mt-6">
-                <label className="text-sm font-medium text-slate-700">
-                  Task Title
-                </label>
+                  <label className="text-sm font-medium text-slate-700">
+                    Task Title
+                  </label>
 
                 <input
                   placeholder="Create App UI" 
@@ -229,9 +232,9 @@ const CreateTask = () => {
               </div>
 
               <div className="mt-5">
-                <label className="text-sm font-medium text-slate-700">
-                  Description
-                </label>
+                  <label className="text-sm font-medium text-slate-700">
+                    Description
+                  </label>
                 
                 <textarea 
                   placeholder="Describe Task" 

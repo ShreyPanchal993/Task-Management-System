@@ -75,9 +75,12 @@ const ManageTasks = () => {
   return (
     <DashboardLayout activeMenu="Manage Tasks">
       <div className="my-5 animate-slide-down">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between">
+        <div className="page-header">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl md:text-xl font-medium">My Tasks</h2>
+            <div>
+              <p className="soft-label">Task Library</p>
+              <h2 className="page-title mt-2">Manage Tasks</h2>
+            </div>
 
             <button
               className="flex lg:hidden download-btn"
