@@ -1,15 +1,21 @@
 import React, {createContext, useState, useEffect} from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPaths";
-import { tokenStore } from "../utils/tokenStore";
 
 export const UserContext = createContext();
+
+const PUBLIC_PATHS = new Set(["/", "/login", "/signUp"]);
 
 const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (PUBLIC_PATHS.has(window.location.pathname)) {
+            setLoading(false);
+            return;
+        }
+
         fetchUser();
     }, []);
 

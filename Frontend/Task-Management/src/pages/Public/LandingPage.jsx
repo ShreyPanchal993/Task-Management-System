@@ -24,10 +24,10 @@ const LandingPage = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/login" className="hidden md:inline-flex btn-secondary w-auto px-5">
+            <Link to="/login" className="hidden md:inline-flex btn-secondary w-auto min-w-[136px] justify-center px-5">
               Sign In
             </Link>
-            <Link to={user ? dashboardPath : "/signUp"} className="inline-flex btn-primary w-auto px-5">
+            <Link to={user ? dashboardPath : "/signUp"} className="inline-flex btn-primary w-auto min-w-[136px] justify-center px-5">
               {user ? "Open Dashboard" : "Get Started"}
             </Link>
           </div>
@@ -164,6 +164,33 @@ const LandingPage = () => {
           </div>
         </section>
       </main>
+
+      <footer
+        className="border-t mt-8"
+        style={{ background: "rgba(255, 255, 255, 0.38)", borderColor: "rgba(148, 163, 184, 0.14)" }}
+      >
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 text-sm text-slate-600 md:flex-row md:items-center md:justify-between md:px-8">
+          <div>
+            <p className="font-semibold text-slate-900">TaskFlow</p>
+            <p className="mt-1">Modern task management for teams and focused execution.</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-5">
+            <Link to="/" className="hover:text-slate-900 transition-colors">Home</Link>
+            <Link to="/login" className="hover:text-slate-900 transition-colors">Sign In</Link>
+            <Link to="/signUp" className="hover:text-slate-900 transition-colors">Create Account</Link>
+          </div>
+        </div>
+
+        <div
+          className="border-t"
+          style={{ borderColor: "rgba(148, 163, 184, 0.12)" }}
+        >
+          <div className="mx-auto max-w-7xl px-4 py-4 text-xs text-slate-500 md:px-8">
+            Copyright © {new Date().getFullYear()} TaskFlow. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
