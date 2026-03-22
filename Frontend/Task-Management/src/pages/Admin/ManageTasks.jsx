@@ -17,10 +17,10 @@ const ManageTasks = () => {
 
   const getAllTasks = async () => {
     try{
+      const params = filterStatus === "All" ? {} : { status: filterStatus };
+
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, {
-        params: {
-          status: filterStatus === "All" ? "" : filterStatus
-        },
+        params,
       });
 
       const data = response.data?.data || {};
@@ -68,7 +68,7 @@ const ManageTasks = () => {
   };
 
   useEffect(() => {
-    getAllTasks(filterStatus);
+    getAllTasks();
     return () => {};
   }, [filterStatus]);
 
