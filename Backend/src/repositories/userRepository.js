@@ -1,9 +1,9 @@
 import User from "../models/User.js";
 import Task from "../models/Task.js";
 
-const getUsers = async (userId) => {
+const getUsers = async () => {
     try{
-        const users = await User.find({role: 'member'}).select('-password');
+        const users = await User.find({ role: { $in: ["member", "admin"] } }).select('-password');
 
             // Add task count for each user
             const usersWithTaskCount = await Promise.all(users.map(async (user) => {
@@ -36,4 +36,22 @@ const getUserById = async (userId) => {
     }
 };
 
-export {getUsers, getUserById};
+const updateUserRole = async (userId, role) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { role },
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        return user;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+export {getUsers, getUserById, updateUserRole};

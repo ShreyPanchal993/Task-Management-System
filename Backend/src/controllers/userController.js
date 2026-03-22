@@ -27,4 +27,18 @@ const getUserById = async (req, res) => {
     }
 };
 
-export {getUsers, getUserById};
+const updateUserRole = async (req, res) => {
+    try{
+        const updatedUser = await userService.updateUserRole(req.user, req.params.id, req.body.role);
+        logger.info(`User role updated by ${req.user.id}: ${req.params.id} -> ${req.body.role}`);
+        return ApiSuccess.ok(res, "User role updated successfully", updatedUser);
+    } catch(error){
+        logger.error(`Update user role failed: ${error.message}`);
+        const apiError = error.message === "User not found"
+            ? ApiError.notFound(error.message)
+            : ApiError.badRequest(error.message);
+        return res.status(apiError.statusCode).json(apiError);
+    }
+};
+
+export {getUsers, getUserById, updateUserRole};

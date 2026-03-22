@@ -1,5 +1,5 @@
 const isProduction = process.env.NODE_ENV === "production";
-const sameSite = isProduction ? "strict" : "lax";
+const sameSite = isProduction ? "none" : "lax";
 
 export const authCookieOptions = {
     httpOnly: true,

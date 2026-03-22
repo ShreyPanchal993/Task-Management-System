@@ -6,16 +6,15 @@ import * as authRepository from "../repositories/authRepository.js";
 import { normalizeProfileUpdateInput, normalizeUserInput } from "../utils/inputSecurity.js";
 
 const registerUser = async (userDetails) => {
-    const { password, adminInviteToken, ...restUserDetails } = userDetails;
-    const normalizedUser = normalizeUserInput({ ...restUserDetails, adminInviteToken });
+    const { password, ...restUserDetails } = userDetails;
+    const normalizedUser = normalizeUserInput(restUserDetails);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const role = tokens.roleDetermine(normalizedUser.adminInviteToken);
     const user = await authRepository.registerUser({
         ...normalizedUser,
         password: hashedPassword,
-        role,
+        role: "member",
     });
 
     const accessToken = tokens.generateToken(user.id);

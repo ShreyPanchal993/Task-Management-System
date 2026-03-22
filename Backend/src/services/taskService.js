@@ -1,6 +1,8 @@
 import * as taskRepository from '../repositories/taskRepository.js';
 import { normalizeTaskInput } from "../utils/inputSecurity.js";
 
+const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+
 const getTasks = async (user, filter = {}) => { 
     const tasks = await taskRepository.getTasks(user, filter);
     return tasks;
@@ -45,7 +47,7 @@ const deleteTask = async (taskId) => {
 
 const updateTaskStatus = async (task, status, user) => { 
     const isAssigned = task.assignedTo.some(userId => userId.toString() === user._id.toString());
-    if (user.role !== 'admin' && !isAssigned) {
+    if (!canManageAllTasks(user) && !isAssigned) {
         throw new Error("Unauthorized to update this task's status");
     }
     

@@ -18,10 +18,24 @@ const __dirname = path.dirname(__filename);
 dotenv.config({path: path.join(process.cwd(), '.env')})
 
 const app = express();
+const defaultDevOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const configuredOrigins = (process.env.CLIENT_URL || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+const allowedOrigins = process.env.NODE_ENV === "production"
+    ? configuredOrigins
+    : [...new Set([...configuredOrigins, ...defaultDevOrigins])];
 
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || 'http://localhost:5173',
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error(`CORS blocked for origin: ${origin}`));
+        },
         methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
         credentials: true
