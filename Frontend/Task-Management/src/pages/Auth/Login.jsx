@@ -5,7 +5,7 @@ import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext.jsx";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
-import { LuEye, LuEyeOff } from "react-icons/lu";
+import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -93,6 +93,18 @@ const Login = () => {
 
           <div className="auth-form-panel flex items-center">
             <div className="w-full max-w-md mx-auto">
+              <div className="mb-7 flex justify-start">
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:-translate-x-0.5 hover:text-slate-900"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 shadow-sm">
+                    <LuArrowLeft className="text-base" />
+                  </span>
+                  Back to Home
+                </Link>
+              </div>
+
               <p className="soft-label">Welcome Back</p>
               <h3 className="text-3xl font-semibold text-slate-900 mt-2">Sign In</h3>
               <p className="text-slate-500 mt-2 mb-5">Enter your credentials to access your workspace.</p>
