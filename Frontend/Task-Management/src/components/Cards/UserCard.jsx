@@ -1,4 +1,5 @@
 import React from 'react'
+import Avatar from '../Avatar';
 
 const UserCard = ({ userInfo, canManageRoles = false, isUpdatingRole = false, onRoleChange }) => {
     const roleBadgeClassName = userInfo?.role === "admin"
@@ -9,10 +10,13 @@ const UserCard = ({ userInfo, canManageRoles = false, isUpdatingRole = false, on
         <div className="user-card">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <img src={userInfo?.profilePicture}
-                    alt={`Avatar`}
-                    className="w-14 h-14 rounded-full border-4 border-white/80 shadow-md object-cover" 
-                />
+                    <Avatar
+                        src={userInfo?.profilePicture}
+                        name={userInfo?.name}
+                        alt="Avatar"
+                        className="w-14 h-14 rounded-full border-4 border-white/80 shadow-md object-cover"
+                        fallbackClassName="flex h-14 w-14 items-center justify-center rounded-full border-4 border-white/80 bg-slate-200 text-sm font-semibold text-slate-600 shadow-md"
+                    />
 
                     <div>
                         <p className="text-sm font-semibold text-slate-900">{userInfo?.name}</p>
