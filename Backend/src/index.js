@@ -39,6 +39,10 @@ app.use(
                 return callback(null, true);
             }
 
+            logger.error("CORS blocked request", {
+                origin,
+                allowedOrigins,
+            });
             return callback(new Error(`CORS blocked for origin: ${origin}`));
         },
         methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
@@ -57,7 +61,32 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
+    const startedAt = Date.now();
+
+    logger.info(`${req.method} ${req.url}`, {
+        method: req.method,
+        url: req.originalUrl,
+        origin: req.get("origin") || null,
+        ip: req.ip,
+    });
+
+    res.on("finish", () => {
+        if (res.statusCode < 400) {
+            return;
+        }
+
+        const level = res.statusCode >= 500 ? "error" : "warn";
+        logger.log(level, "Request completed with error status", {
+            method: req.method,
+            url: req.originalUrl,
+            statusCode: res.statusCode,
+            origin: req.get("origin") || null,
+            ip: req.ip,
+            userId: req.user?._id?.toString?.() || req.user?.id || null,
+            durationMs: Date.now() - startedAt,
+        });
+    });
+
     next();
 });
 
