@@ -1,6 +1,6 @@
 import axios from "axios";
 import { BASE_URL, API_PATHS } from "./apiPaths";
-import { ensureCsrfToken, getCsrfToken } from "./csrf";
+import { clearCsrfToken, ensureCsrfToken, getCsrfToken, setCsrfToken } from "./csrf";
 
 const SAFE_METHODS = new Set(["get", "head", "options"]);
 const PUBLIC_PATHS = new Set(["/", "/login", "/signUp"]);
@@ -38,7 +38,15 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        const csrfToken = response?.data?.data?.csrfToken;
+
+        if (csrfToken) {
+            setCsrfToken(csrfToken);
+        }
+
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
         const currentPath = window.location.pathname;
@@ -68,6 +76,7 @@ axiosInstance.interceptors.response.use(
                 
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
+                clearCsrfToken();
                 if (!isOnPublicRoute) {
                     window.location.href = "/";
                 }

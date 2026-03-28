@@ -125,7 +125,7 @@ const Login = () => {
                       onClick={() => setShowPassword((prev) => !prev)}
                       aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showPassword ? <LuEyeOff /> : <LuEye />}
+                      {showPassword ? <LuEye /> : <LuEyeOff />}
                     </button>
                   </div>
                 </div>
