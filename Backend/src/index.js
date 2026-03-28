@@ -20,25 +20,28 @@ dotenv.config({path: path.join(process.cwd(), '.env')})
 const app = express();
 app.set("trust proxy", 1);
 
+const normalizeOrigin = (origin = "") => origin.trim().replace(/\/+$/, "");
 const defaultDevOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 const configuredOrigins = (process.env.CLIENT_URL || "")
     .split(",")
-    .map((origin) => origin.trim())
+    .map(normalizeOrigin)
     .filter(Boolean);
 const allowedOrigins = process.env.NODE_ENV === "production"
     ? configuredOrigins
-    : [...new Set([...configuredOrigins, ...defaultDevOrigins])];
+    : [...new Set([...configuredOrigins, ...defaultDevOrigins.map(normalizeOrigin)])];
 
 app.use(
     cors({
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
+            const normalizedOrigin = normalizeOrigin(origin);
+
+            if (!origin || allowedOrigins.includes(normalizedOrigin)) {
                 return callback(null, true);
             }
 
             return callback(new Error(`CORS blocked for origin: ${origin}`));
         },
-        methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+        methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
         credentials: true
     })
