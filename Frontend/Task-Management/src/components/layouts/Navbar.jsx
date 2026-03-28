@@ -8,6 +8,7 @@ import ProfilePhotoSelector from '../Inputs/ProfilePhotoSelector';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import uploadImage from '../../utils/uploadImage';
+import Avatar from '../Avatar';
 
 const Navbar = ({ activeMenu }) => {
     const [openSideMenu, setOpenSideMenu] = useState(false);
@@ -22,6 +23,7 @@ const Navbar = ({ activeMenu }) => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [profilePicture, setProfilePicture] = useState(null);
+    const [removeProfilePicture, setRemoveProfilePicture] = useState(false);
     const [error, setError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
@@ -31,6 +33,8 @@ const Navbar = ({ activeMenu }) => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        setProfilePicture(null);
+        setRemoveProfilePicture(false);
         setError('');
         setPasswordError('');
         setShowPasswordSection(false);
@@ -44,7 +48,9 @@ const Navbar = ({ activeMenu }) => {
         try {
             let imageUrl = user?.profilePicture;
 
-            if (profilePicture) {
+            if (removeProfilePicture) {
+                imageUrl = '';
+            } else if (profilePicture) {
                 const uploadRes = await uploadImage(profilePicture);
                 imageUrl = uploadRes.url;
             }
@@ -58,6 +64,7 @@ const Navbar = ({ activeMenu }) => {
             updateUser(response.data.data);
             setShowProfileModal(false);
             setProfilePicture(null);
+            setRemoveProfilePicture(false);
         } catch (updateError) {
             setError(updateError.response?.data?.message || 'Failed to update profile');
         }
@@ -134,13 +141,12 @@ const Navbar = ({ activeMenu }) => {
                             boxShadow: '0 12px 24px rgba(15, 23, 42, 0.12)',
                         }}
                     >
-                        <img
-                            src={user?.profilePicture || 'https://via.placeholder.com/40'}
+                        <Avatar
+                            src={user?.profilePicture}
+                            name={user?.name}
                             alt="Profile"
                             className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.target.src = 'https://via.placeholder.com/40';
-                            }}
+                            fallbackClassName="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-semibold text-slate-600"
                         />
                     </button>
                 </div>
@@ -162,7 +168,8 @@ const Navbar = ({ activeMenu }) => {
                         <ProfilePhotoSelector
                             image={profilePicture}
                             setImage={setProfilePicture}
-                            existingImageUrl={user?.profilePicture}
+                            existingImageUrl={removeProfilePicture ? null : user?.profilePicture}
+                            onRemoveExisting={setRemoveProfilePicture}
                         />
                         <h3 className="mt-3 text-base font-semibold text-gray-900">{user?.name}</h3>
                         <span className="text-xs text-gray-400">{user?.email}</span>

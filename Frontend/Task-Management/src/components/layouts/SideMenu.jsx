@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import { HiChevronLeft } from 'react-icons/hi';
+import Avatar from '../Avatar';
 
 const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
     const { user, clearUser } = useContext(UserContext);
@@ -55,14 +56,12 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
 
             <div className="flex flex-col items-center justify-center mb-7 pt-7 px-4">
                 <div className="relative">
-                    <img
-                        src={user?.profilePicture || "https://via.placeholder.com/80"}
+                    <Avatar
+                        src={user?.profilePicture}
+                        name={user?.name}
                         alt="Profile Image"
                         className={`${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} rounded-full object-cover transition-all duration-300 ring-4 ring-white/80`}
-                        style={{ backgroundColor: '#cbd5e1' }}
-                        onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/80";
-                        }}
+                        fallbackClassName={`${isCollapsed ? 'w-12 h-12 text-sm' : 'w-20 h-20 text-xl'} flex items-center justify-center rounded-full transition-all duration-300 ring-4 ring-white/80 bg-slate-300 font-semibold text-slate-700`}
                     />
                 </div>
 
