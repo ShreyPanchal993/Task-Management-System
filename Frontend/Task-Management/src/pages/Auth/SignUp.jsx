@@ -6,7 +6,7 @@ import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext";
 import uploadImage from "../../utils/uploadImage.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
-import { LuEye, LuEyeOff } from "react-icons/lu";
+import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
 
 const SignUp = () => {
   const [profilePicture, setProfilePicture] = useState(null);
@@ -124,14 +124,26 @@ const SignUp = () => {
             </div>
           </div>
 
-          <div className="auth-form-panel">
-            <div className="max-w-lg mx-auto">
+          <div className="auth-form-panel flex items-center">
+            <div className="w-full max-w-md mx-auto">
+              <div className="mb-7 flex justify-start">
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:-translate-x-0.5 hover:text-slate-900"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 shadow-sm">
+                    <LuArrowLeft className="text-base" />
+                  </span>
+                  Back to Home
+                </Link>
+              </div>
+
               <p className="soft-label">Get Started</p>
               <h3 className="text-3xl font-semibold text-slate-900 mt-2">Create Your Account</h3>
               <p className="text-slate-500 mt-2 mb-5">Set up your profile and start organizing work.</p>
 
               <form onSubmit={handleSingUp} className="space-y-3.5">
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-4">
                   <div className="relative group">
                     <div className="w-20 h-20 rounded-full border border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-white/70 shadow-sm">
                       {previewUrl ? (
@@ -147,50 +159,47 @@ const SignUp = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                  <input
+                    className="form-input mt-0"
+                    placeholder="John Doe"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <input
+                    className="form-input mt-0"
+                    placeholder="you@company.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                  <div className="password-input-shell mt-0">
                     <input
-                      className="form-input mt-0"
-                      placeholder="John Doe"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      className="form-input password-input mt-0"
+                      placeholder="Create a password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <LuEye /> : <LuEyeOff />}
+                    </button>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                    <input
-                      className="form-input mt-0"
-                      placeholder="you@company.com"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
-                    <div className="password-input-shell mt-0">
-                      <input
-                        className="form-input password-input mt-0"
-                        placeholder="Create a password"
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        className="password-toggle-btn"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? <LuEye /> : <LuEyeOff />}
-                      </button>
-                    </div>
-                  </div>
-
                 </div>
 
                 {error && (
