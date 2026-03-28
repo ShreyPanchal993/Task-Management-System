@@ -3,6 +3,7 @@ import { csrfCookieOptions, clearCookieOptions } from "./cookieOptions.js";
 
 const CSRF_COOKIE_NAME = "csrfToken";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const normalizeOrigin = (origin = "") => origin.trim().replace(/\/+$/, "");
 
 export const generateCsrfToken = () => crypto.randomBytes(32).toString("hex");
 
@@ -34,9 +35,9 @@ export const requireCsrfProtection = (req, res, next) => {
     const requestOrigin = req.get("Origin") || "";
     const allowedOrigins = (process.env.CLIENT_URL || "")
         .split(",")
-        .map((origin) => origin.trim())
+        .map(normalizeOrigin)
         .filter(Boolean);
-    const isTrustedOrigin = requestOrigin && allowedOrigins.includes(requestOrigin);
+    const isTrustedOrigin = requestOrigin && allowedOrigins.includes(normalizeOrigin(requestOrigin));
 
     if (headerToken && isTrustedOrigin && !cookieToken) {
         return next();

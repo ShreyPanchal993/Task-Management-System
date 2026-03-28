@@ -1,33 +1,49 @@
 import axios from "axios";
 import { BASE_URL, API_PATHS } from "./apiPaths";
 
+const CSRF_COOKIE_NAME = "csrfToken";
 const CSRF_STORAGE_KEY = "csrfToken";
-
 let csrfTokenCache = "";
 
-export const setCsrfToken = (token) => {
-  csrfTokenCache = token || "";
-
-  if (typeof window !== "undefined") {
-    if (csrfTokenCache) {
-      window.sessionStorage.setItem(CSRF_STORAGE_KEY, csrfTokenCache);
-    } else {
-      window.sessionStorage.removeItem(CSRF_STORAGE_KEY);
-    }
+const readCookie = (name) => {
+  if (typeof document === "undefined") {
+    return "";
   }
+
+  const cookieEntry = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${name}=`));
+
+  return cookieEntry ? decodeURIComponent(cookieEntry.split("=")[1]) : "";
 };
 
-export const getCsrfToken = () => {
-  if (csrfTokenCache) {
+const readStoredToken = () => {
+  if (typeof window === "undefined") {
     return csrfTokenCache;
   }
 
-  if (typeof window !== "undefined") {
-    csrfTokenCache = window.sessionStorage.getItem(CSRF_STORAGE_KEY) || "";
+  return window.sessionStorage.getItem(CSRF_STORAGE_KEY) || csrfTokenCache;
+};
+
+export const setCsrfToken = (token = "") => {
+  csrfTokenCache = token;
+
+  if (typeof window === "undefined") {
+    return csrfTokenCache;
   }
 
-  return csrfTokenCache;
+  if (token) {
+    window.sessionStorage.setItem(CSRF_STORAGE_KEY, token);
+  } else {
+    window.sessionStorage.removeItem(CSRF_STORAGE_KEY);
+  }
+
+  return token;
 };
+
+export const clearCsrfToken = () => setCsrfToken("");
+
+export const getCsrfToken = () => readCookie(CSRF_COOKIE_NAME) || readStoredToken();
 
 export const ensureCsrfToken = async () => {
   const existingToken = getCsrfToken();
@@ -40,7 +56,6 @@ export const ensureCsrfToken = async () => {
     withCredentials: true,
   });
 
-  const csrfToken = response.data?.data?.csrfToken || "";
-  setCsrfToken(csrfToken);
-  return csrfToken;
+  const issuedToken = response?.data?.data?.csrfToken || getCsrfToken();
+  return setCsrfToken(issuedToken);
 };
