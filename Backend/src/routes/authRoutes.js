@@ -7,6 +7,7 @@ import { validateRequest } from "../middlewares/validateRequest.js";
 import { authLimiter, refreshLimiter, uploadLimiter } from "../middlewares/rateLimiters.js";
 import { loginSchema, registerSchema, updateProfileSchema } from "../validations/authValidation.js";
 import logger from "../config/logger.js";
+import { buildPublicUploadUrl } from "../utils/publicUrl.js";
 
 const router = express.Router();
 
@@ -38,7 +39,7 @@ router.post("/upload-image", uploadLimiter, protect, requireCsrfProtection, uplo
             return res.status(400).json({ message: "No image uploaded" });
         }
 
-        const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+        const imageUrl = buildPublicUploadUrl(req, req.file.filename);
 
         res.status(200).json({ message: "Image uploaded successfully", url: imageUrl });
     } catch (error) {
