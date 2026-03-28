@@ -6,6 +6,7 @@ import { issueCsrfToken, requireCsrfProtection } from "../utils/csrf.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 import { authLimiter, refreshLimiter, uploadLimiter } from "../middlewares/rateLimiters.js";
 import { loginSchema, registerSchema, updateProfileSchema } from "../validations/authValidation.js";
+import logger from "../config/logger.js";
 
 const router = express.Router();
 
@@ -28,6 +29,12 @@ router
 router.post("/upload-image", uploadLimiter, protect, requireCsrfProtection, upload.single("image"), (req, res) => {
     try {
         if (!req.file) {
+            logger.warn("Upload image rejected: no file provided", {
+                method: req.method,
+                url: req.originalUrl,
+                userId: req.user?._id?.toString?.() || req.user?.id || null,
+                ip: req.ip,
+            });
             return res.status(400).json({ message: "No image uploaded" });
         }
 
@@ -35,6 +42,14 @@ router.post("/upload-image", uploadLimiter, protect, requireCsrfProtection, uplo
 
         res.status(200).json({ message: "Image uploaded successfully", url: imageUrl });
     } catch (error) {
+        logger.error("Upload image failed", {
+            method: req.method,
+            url: req.originalUrl,
+            userId: req.user?._id?.toString?.() || req.user?.id || null,
+            error: error.message,
+            stack: error.stack,
+            ip: req.ip,
+        });
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 });
