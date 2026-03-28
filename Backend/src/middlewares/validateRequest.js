@@ -1,5 +1,6 @@
 import Joi from "joi";
 import ApiError from "../utils/ApiError.js";
+import logger from "../config/logger.js";
 
 const requestTargets = ["body", "query", "params"];
 
@@ -26,6 +27,19 @@ export const validateRequest = (schemas = {}) => (req, res, next) => {
 
             if (error) {
                 const message = error.details.map((detail) => detail.message).join(", ");
+                logger.warn("Request validation failed", {
+                    method: req.method,
+                    url: req.originalUrl,
+                    target,
+                    message,
+                    details: error.details.map((detail) => ({
+                        message: detail.message,
+                        path: detail.path,
+                        type: detail.type,
+                    })),
+                    userId: req.user?._id?.toString?.() || req.user?.id || null,
+                    ip: req.ip,
+                });
                 const apiError = ApiError.badRequest(message, error.details);
                 return res.status(apiError.statusCode).json(apiError);
             }
@@ -39,6 +53,13 @@ export const validateRequest = (schemas = {}) => (req, res, next) => {
 
         next();
     } catch (error) {
+        logger.error("Request validation middleware crashed", {
+            method: req.method,
+            url: req.originalUrl,
+            error: error.message,
+            stack: error.stack,
+            ip: req.ip,
+        });
         const apiError = ApiError.badRequest(error.message);
         return res.status(apiError.statusCode).json(apiError);
     }

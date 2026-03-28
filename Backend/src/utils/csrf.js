@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { csrfCookieOptions, clearCookieOptions } from "./cookieOptions.js";
+import logger from "../config/logger.js";
 
 const CSRF_COOKIE_NAME = "csrfToken";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
@@ -40,10 +41,24 @@ export const requireCsrfProtection = (req, res, next) => {
     const isTrustedOrigin = requestOrigin && allowedOrigins.includes(normalizeOrigin(requestOrigin));
 
     if (headerToken && isTrustedOrigin && !cookieToken) {
+        logger.warn("CSRF bypass accepted for trusted origin without cookie", {
+            method: req.method,
+            url: req.originalUrl,
+            origin: requestOrigin,
+            ip: req.ip,
+        });
         return next();
     }
 
     if (!cookieToken || !headerToken) {
+        logger.warn("CSRF rejected: missing token", {
+            method: req.method,
+            url: req.originalUrl,
+            origin: requestOrigin,
+            hasCookieToken: Boolean(cookieToken),
+            hasHeaderToken: Boolean(headerToken),
+            ip: req.ip,
+        });
         return res.status(403).json({
             success: false,
             message: "CSRF token missing",
@@ -57,6 +72,14 @@ export const requireCsrfProtection = (req, res, next) => {
         cookieBuffer.length !== headerBuffer.length ||
         !crypto.timingSafeEqual(cookieBuffer, headerBuffer)
     ) {
+        logger.warn("CSRF rejected: invalid token", {
+            method: req.method,
+            url: req.originalUrl,
+            origin: requestOrigin,
+            cookieLength: cookieBuffer.length,
+            headerLength: headerBuffer.length,
+            ip: req.ip,
+        });
         return res.status(403).json({
             success: false,
             message: "Invalid CSRF token",
