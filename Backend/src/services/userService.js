@@ -1,8 +1,8 @@
 import * as userRepository from "../repositories/userRepository.js";
 import ApiError from "../utils/ApiError.js";
 
-const getUsers = async () => {
-    const users =  await userRepository.getUsers();
+const getUsers = async (actor) => {
+    const users =  await userRepository.getUsers(actor);
     return users;
 };
 
