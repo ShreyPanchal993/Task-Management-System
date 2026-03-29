@@ -1,57 +1,73 @@
 import User from "../models/User.js";
 import Task from "../models/Task.js";
+import ApiError from "../utils/ApiError.js";
 
 const getUsers = async () => {
-    try{
-        const users = await User.find({ role: { $in: ["member", "admin"] } }).select('-password');
+    const [users, taskCounts] = await Promise.all([
+        User.find({ role: { $in: ["member", "admin"] } }).select("-password").lean(),
+        Task.aggregate([
+            { $unwind: "$assignedTo" },
+            {
+                $group: {
+                    _id: "$assignedTo",
+                    pendingTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "Pending"] }, 1, 0],
+                        },
+                    },
+                    inProgressTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "In Progress"] }, 1, 0],
+                        },
+                    },
+                    completedTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "Completed"] }, 1, 0],
+                        },
+                    },
+                },
+            },
+        ]),
+    ]);
 
-            // Add task count for each user
-            const usersWithTaskCount = await Promise.all(users.map(async (user) => {
-                const pendingTasks = await Task.countDocuments({assignedTo: user._id, status: 'Pending'});
-                const inProgressTasks = await Task.countDocuments({assignedTo: user._id, status: 'In Progress'});
-                const completedTasks = await Task.countDocuments({assignedTo: user._id, status: 'Completed'});
-                return {
-                    ...user._doc, 
-                    pendingTasks: pendingTasks, 
-                    inProgressTasks: inProgressTasks, 
-                    completedTasks: completedTasks
-                };
-            }));
+    const taskCountMap = new Map(
+        taskCounts.map((item) => [item._id.toString(), item])
+    );
 
-        return usersWithTaskCount;
-    } catch(error){
-        throw new Error(error.message);
-    }
+    return users.map((user) => {
+        const counts = taskCountMap.get(user._id.toString());
+
+        return {
+            ...user,
+            pendingTasks: counts?.pendingTasks || 0,
+            inProgressTasks: counts?.inProgressTasks || 0,
+            completedTasks: counts?.completedTasks || 0,
+        };
+    });
 };
 
 const getUserById = async (userId) => {
-    try{
-        const user = await User.findById(userId).select('-password');
-        if (!user){
-            throw new Error("User not found");
-        }
-        return user;
-    } catch(error){
-        throw new Error(error.message);
+    const user = await User.findById(userId).select("-password").lean();
+
+    if (!user) {
+        throw ApiError.notFound("User not found");
     }
+
+    return user;
 };
 
 const updateUserRole = async (userId, role) => {
-    try {
-        const user = await User.findByIdAndUpdate(
-            userId,
-            { role },
-            { new: true, runValidators: true }
-        ).select("-password");
+    const user = await User.findByIdAndUpdate(
+        userId,
+        { role },
+        { new: true, runValidators: true }
+    ).select("-password").lean();
 
-        if (!user) {
-            throw new Error("User not found");
-        }
-
-        return user;
-    } catch (error) {
-        throw new Error(error.message);
+    if (!user) {
+        throw ApiError.notFound("User not found");
     }
+
+    return user;
 };
 
 export {getUsers, getUserById, updateUserRole};

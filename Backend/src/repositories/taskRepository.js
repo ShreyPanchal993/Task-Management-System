@@ -2,43 +2,49 @@ import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
 
 const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+const taskListPopulate = { path: "assignedTo", select: "name email profilePicture" };
+const buildTaskVisibilityFilter = (user, filter = {}) =>
+    canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };
+const buildTaskStatusSummary = (statusCounts = []) => {
+    const countMap = statusCounts.reduce((acc, statusItem) => {
+        acc[statusItem._id] = statusItem.count;
+        return acc;
+    }, {});
+
+    return {
+        all: Object.values(countMap).reduce((total, count) => total + count, 0),
+        pendingTasks: countMap.Pending || 0,
+        inProgressTasks: countMap["In Progress"] || 0,
+        completedTasks: countMap.Completed || 0,
+    };
+};
 
 const getTasks = async (user, filter = {}) => { 
-    const baseFilter = canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };
+    const baseFilter = buildTaskVisibilityFilter(user, filter);
+    const summaryFilter = canManageAllTasks(user) ? {} : { assignedTo: user._id };
 
     const [tasksRaw, statusCounts] = await Promise.all([
-        Task.find(baseFilter).populate('assignedTo', 'name email profilePicture').lean(),
+        Task.find(baseFilter).populate(taskListPopulate).lean(),
         Task.aggregate([
-            { $match: canManageAllTasks(user) ? {} : { assignedTo: user._id } },
-            { $group: { _id: '$status', count: { $sum: 1 } } }
-        ])
+            { $match: summaryFilter },
+            { $group: { _id: "$status", count: { $sum: 1 } } },
+        ]),
     ]);
 
     const tasks = tasksRaw.map(task => ({
         ...task,
-        completedTodoCount: task.todoChecklist.filter(item => item.completed).length
+        completedTodoCount: task.todoChecklist.filter(item => item.completed).length,
     }));
-
-    const countMap = statusCounts.reduce((acc, s) => { acc[s._id] = s.count; return acc; }, {});
-    const allTasks = Object.values(countMap).reduce((a, b) => a + b, 0);
 
     return { 
         tasks, 
-        statusSummary: {
-            all: allTasks, 
-            pendingTasks: countMap['Pending'] || 0, 
-            inProgressTasks: countMap['In Progress'] || 0, 
-            completedTasks: countMap['Completed'] || 0
-        } 
+        statusSummary: buildTaskStatusSummary(statusCounts),
     };
 };
 
-const getTaskById = async (taskId) => { 
-    const task = await Task.findById(taskId).populate('assignedTo', 'name email profilePicture');   
-    if (!task) {
-        throw new Error('Task not found');
-    }
-    return task;
+const getTaskById = async (taskId, user) => {
+    const filter = user ? buildTaskVisibilityFilter(user, { _id: taskId }) : { _id: taskId };
+    return Task.findOne(filter).populate(taskListPopulate);
 };
 
 const createTask = async (taskData) => {  
@@ -52,7 +58,7 @@ const updateTask = async (taskData) => {
         taskData._id, 
         { ...taskData, assignedTo: assignedToIds }, 
         { new: true }
-    ).populate('assignedTo', 'name email profilePicture');
+    ).populate(taskListPopulate);
     return updatedTask;
 };
 
@@ -72,7 +78,7 @@ const updateTaskStatus = async (task) => {
             assignedTo: assignedToIds
         }, 
         { new: true }
-    ).populate('assignedTo', 'name email profilePicture');
+    ).populate(taskListPopulate);
     return updatedTask;
 };
 
@@ -87,7 +93,7 @@ const updateTaskChecklist = async (task) => {
             assignedTo: assignedToIds
         }, 
         { new: true }
-    ).populate('assignedTo', 'name email profilePicture');
+    ).populate(taskListPopulate);
 
     return updatedTask;
 };

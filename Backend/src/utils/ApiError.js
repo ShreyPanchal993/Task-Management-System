@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 class ApiError extends Error {
     constructor(statusCode, message, errors = null) {
         super(message);
+        this.name = "ApiError";
         this.statusCode = statusCode;
         this.success = false;
         this.message = message;
@@ -13,6 +14,10 @@ class ApiError extends Error {
 
     static badRequest(message, errors = null) {
         return new ApiError(httpStatus.BAD_REQUEST, message, errors);
+    }
+
+    static conflict(message = "Conflict") {
+        return new ApiError(httpStatus.CONFLICT, message);
     }
 
     static unauthorized(message = "Unauthorized") {
