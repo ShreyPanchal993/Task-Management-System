@@ -2,13 +2,9 @@ import User from "../models/User.js";
 import Task from "../models/Task.js";
 import ApiError from "../utils/ApiError.js";
 
-const getUsers = async (actor) => {
-    const roleFilter = actor?.role === "super_admin"
-        ? {}
-        : { role: { $in: ["member", "admin"] } };
-
+const getUsers = async () => {
     const [users, taskCounts] = await Promise.all([
-        User.find(roleFilter).select("-password").lean(),
+        User.find({ role: { $in: ["member", "admin"] } }).select("-password").lean(),
         Task.aggregate([
             { $unwind: "$assignedTo" },
             {
