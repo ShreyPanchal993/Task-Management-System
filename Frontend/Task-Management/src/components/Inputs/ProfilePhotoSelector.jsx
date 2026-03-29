@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
+import resolveImageUrl from '../../utils/resolveImageUrl';
 
 const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExisting }) => {
     const inputRef = useRef(null);
-    const [previewUrl, setPreviewUrl] = useState(existingImageUrl || null);
+    const [previewUrl, setPreviewUrl] = useState(resolveImageUrl(existingImageUrl) || null);
 
     useEffect(() => {
-        setPreviewUrl(existingImageUrl || null);
+        setPreviewUrl(resolveImageUrl(existingImageUrl) || null);
     }, [existingImageUrl]);
 
     useEffect(() => {
