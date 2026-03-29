@@ -1,5 +1,5 @@
-import bcrypt from "bcryptjs";
 import * as userRepository from "../repositories/userRepository.js";
+import ApiError from "../utils/ApiError.js";
 
 const getUsers = async () => {
     const users =  await userRepository.getUsers();
@@ -15,11 +15,11 @@ const updateUserRole = async (actor, userId, role) => {
     const targetUser = await userRepository.getUserById(userId);
 
     if (targetUser.role === "super_admin") {
-        throw new Error("Super admin role cannot be modified");
+        throw ApiError.forbidden("Super admin role cannot be modified");
     }
 
     if (targetUser._id.toString() === actor.id.toString()) {
-        throw new Error("You cannot change your own role");
+        throw ApiError.badRequest("You cannot change your own role");
     }
 
     return userRepository.updateUserRole(userId, role);
