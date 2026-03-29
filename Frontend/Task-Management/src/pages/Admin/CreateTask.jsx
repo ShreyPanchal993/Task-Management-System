@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import DashboardLayout from '../../components/layouts/DashboardLayout'
 import { PRIORITY_DATA } from '../../utils/data.js'
 import axiosInstance from '../../utils/axiosInstance.js'
@@ -6,7 +6,7 @@ import { API_PATHS } from '../../utils/apiPaths.js'
 import toast from 'react-hot-toast'
 import { useNavigate, useLocation } from 'react-router-dom'
 import moment from 'moment'
-import { LuTrash2 } from 'react-icons/lu';
+import { LuCalendarDays, LuTrash2 } from 'react-icons/lu';
 import SelectDropDown from '../../components/Inputs/SelectDropdown'
 import SelectUsers from '../../components/Inputs/SelectUsers'
 import TodoListInput from '../../components/Inputs/TodoListInput'
@@ -44,6 +44,7 @@ const CreateTask = () => {
   const location = useLocation();
   const { taskId } = location.state || {};
   const navigate = useNavigate();
+  const hiddenDateInputRef = useRef(null);
 
   const [taskData, setTaskData] = React.useState({
     title: "",
@@ -79,6 +80,19 @@ const CreateTask = () => {
     });
   };
 
+  const openDatePicker = () => {
+    if (!hiddenDateInputRef.current) {
+      return;
+    }
+
+    if (typeof hiddenDateInputRef.current.showPicker === "function") {
+      hiddenDateInputRef.current.showPicker();
+      return;
+    }
+
+    hiddenDateInputRef.current.click();
+  };
+
   // Create Task
   const createTask = async () => {
     setLoading(true);
@@ -89,7 +103,7 @@ const CreateTask = () => {
         completed: false
       }));
 
-      const response = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
+      await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
         ...taskData,
         dueDate: parseDueDateToIsoString(taskData.dueDate),
         todoChecklist: todoList,
@@ -297,17 +311,46 @@ const CreateTask = () => {
                     Due Date
                   </label>
 
-                  <input 
-                    placeholder="DD/MM/YYYY"
-                    className="form-input mt-1.5"
-                    value={taskData.dueDate}
-                    onChange={({ target }) => 
-                      handleValueChange("dueDate", formatDueDateForInput(target.value))
-                    } 
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                  />
+                  <div className="relative mt-1.5">
+                    <input 
+                      placeholder="DD/MM/YYYY"
+                      className="form-input pr-12"
+                      value={taskData.dueDate}
+                      onChange={({ target }) => 
+                        handleValueChange("dueDate", formatDueDateForInput(target.value))
+                      } 
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={10}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={openDatePicker}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                      aria-label="Open date picker"
+                    >
+                      <LuCalendarDays className="text-lg" />
+                    </button>
+
+                    <input
+                      ref={hiddenDateInputRef}
+                      type="date"
+                      className="pointer-events-none absolute right-0 top-0 h-0 w-0 opacity-0"
+                      tabIndex={-1}
+                      value={
+                        moment(taskData.dueDate, DATE_FORMAT, true).isValid()
+                          ? moment(taskData.dueDate, DATE_FORMAT, true).format("YYYY-MM-DD")
+                          : ""
+                      }
+                      onChange={({ target }) =>
+                        handleValueChange(
+                          "dueDate",
+                          target.value ? moment(target.value).format(DATE_FORMAT) : ""
+                        )
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div>

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
-import resolveImageUrl from '../../utils/resolveImageUrl';
+import Avatar from '../Avatar';
 
 const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExisting }) => {
     const inputRef = useRef(null);
@@ -72,10 +72,12 @@ const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExist
             </div>
         ) : (
             <div className="relative">
-                <img
+                <Avatar
                     src={previewUrl}
+                    name="Profile Photo"
                     alt="profile photo"
                     className="w-20 h-20 rounded-full object-cover"
+                    fallbackClassName="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100/50 text-primary"
                 />
                     <button
                         type="button"

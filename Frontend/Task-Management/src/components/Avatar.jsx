@@ -29,7 +29,7 @@ const Avatar = ({
 
     useEffect(() => {
         setHasImageError(false);
-    }, [src]);
+    }, [resolvedSrc]);
 
     if (shouldShowImage) {
         return (
