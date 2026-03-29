@@ -20,6 +20,12 @@ const validateTaskAssignments = async (actor, assignedTo = []) => {
         throw ApiError.badRequest("One or more assigned users were not found");
     }
 
+    const superAdminAssignees = assignedUsers.filter((user) => user.role === "super_admin");
+
+    if (superAdminAssignees.length > 0) {
+        throw ApiError.forbidden("Tasks cannot be assigned to super admins");
+    }
+
     if (actor.role === "admin") {
         const invalidAssignees = assignedUsers.filter((user) => user.role !== "member");
 
