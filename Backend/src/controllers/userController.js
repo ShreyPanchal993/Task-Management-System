@@ -10,7 +10,7 @@ const resolveApiError = (error) => (
 
 const getUsers = async (req, res) => {
     try{
-        const users = await userService.getUsers();
+        const users = await userService.getUsers(req.user);
         return ApiSuccess.ok(res, "Users fetched successfully", users);
     } catch(error){
         const apiError = resolveApiError(error);
