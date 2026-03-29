@@ -1,9 +1,8 @@
-import express from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import * as tokens from "./tokenService.js";
 import * as authRepository from "../repositories/authRepository.js";
 import { normalizeProfileUpdateInput, normalizeUserInput } from "../utils/inputSecurity.js";
+import ApiError from "../utils/ApiError.js";
 
 const registerUser = async (userDetails) => {
     const { password, ...restUserDetails } = userDetails;
@@ -50,7 +49,7 @@ const updateUserProfile = async (userId, userData) => {
         const user = await authRepository.getUserWithPassword(userId);
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            throw new Error('Current password is incorrect.');
+            throw ApiError.badRequest("Current password is incorrect.");
         }
         const salt = await bcrypt.genSalt(10);
         updatedData.password = await bcrypt.hash(newPassword, salt);

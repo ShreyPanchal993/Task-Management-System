@@ -3,7 +3,10 @@ import User from "../models/User.js";
 import excelJS from "exceljs";
 
 const getAllTasks = async () => {
-    const tasks = await Task.find().populate("assignedTo", "name email");
+    const tasks = await Task.find()
+        .populate("assignedTo", "name email")
+        .sort({ createdAt: -1 })
+        .lean();
 
     const workbook = new excelJS.Workbook();
     const worksheet = workbook.addWorksheet("Tasks Report");
@@ -37,38 +40,37 @@ const getAllTasks = async () => {
 };
 
 const getAllUsers = async () => {
-    const users = await User.find().select("name email _id").lean();
-    const userTasks = await Task.find().populate("assignedTo", "name email _id");
+    const [users, taskCounts] = await Promise.all([
+        User.find().select("name email _id").lean(),
+        Task.aggregate([
+            { $unwind: "$assignedTo" },
+            {
+                $group: {
+                    _id: "$assignedTo",
+                    taskCount: { $sum: 1 },
+                    pendingTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "Pending"] }, 1, 0],
+                        },
+                    },
+                    inProgressTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "In Progress"] }, 1, 0],
+                        },
+                    },
+                    completedTasks: {
+                        $sum: {
+                            $cond: [{ $eq: ["$status", "Completed"] }, 1, 0],
+                        },
+                    },
+                },
+            },
+        ]),
+    ]);
 
-    const userTaskMap = {};
-    users.forEach((user) => {
-        userTaskMap[user._id] = {
-            name: user.name,
-            email: user.email,
-            taskCount: 0,
-            pendingTasks: 0,
-            inProgressTasks: 0,
-            completedTasks: 0,
-        };
-    });
-
-    userTasks.forEach((task) => {
-        if (task.assignedTo) {
-            task.assignedTo.forEach((assignedUser) => {
-                if (userTaskMap[assignedUser._id]) {
-                    userTaskMap[assignedUser._id].taskCount += 1;
-                    if (task.status === "Pending"){
-                        userTaskMap[assignedUser._id].pendingTasks += 1;
-                    }
-                    else if (task.status === "In Progress"){ 
-                        userTaskMap[assignedUser._id].inProgressTasks += 1;
-                    }
-                    else if (task.status === "Completed"){ 
-                        userTaskMap[assignedUser._id].completedTasks += 1;
-                    }
-            }}
-        )}
-    });
+    const taskCountMap = new Map(
+        taskCounts.map((item) => [item._id.toString(), item])
+    );
 
     const workbook = new excelJS.Workbook();
     const worksheet = workbook.addWorksheet("User Tasks Report");
@@ -82,11 +84,19 @@ const getAllUsers = async () => {
         { header: "Completed Tasks", key: "completedTasks", width: 20 },
     ];
 
-    Object.values(userTaskMap).forEach((user) => {
-        worksheet.addRow(user);
+    users.forEach((user) => {
+        const counts = taskCountMap.get(user._id.toString());
+        worksheet.addRow({
+            name: user.name,
+            email: user.email,
+            taskCount: counts?.taskCount || 0,
+            pendingTasks: counts?.pendingTasks || 0,
+            inProgressTasks: counts?.inProgressTasks || 0,
+            completedTasks: counts?.completedTasks || 0,
+        });
     });
 
     return await workbook.xlsx.writeBuffer();
-}
+};
 
 export { getAllTasks, getAllUsers };
