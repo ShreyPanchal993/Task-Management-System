@@ -1,8 +1,33 @@
 import * as taskRepository from '../repositories/taskRepository.js';
+import * as userRepository from "../repositories/userRepository.js";
 import { normalizeTaskInput } from "../utils/inputSecurity.js";
 import ApiError from "../utils/ApiError.js";
 
 const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+
+const validateTaskAssignments = async (actor, assignedTo = []) => {
+    if (!Array.isArray(assignedTo)) {
+        throw ApiError.badRequest("assignedTo must be an array of user IDs");
+    }
+
+    if (assignedTo.length === 0) {
+        return;
+    }
+
+    const assignedUsers = await userRepository.getUsersByIds(assignedTo);
+
+    if (assignedUsers.length !== assignedTo.length) {
+        throw ApiError.badRequest("One or more assigned users were not found");
+    }
+
+    if (actor.role === "admin") {
+        const invalidAssignees = assignedUsers.filter((user) => user.role !== "member");
+
+        if (invalidAssignees.length > 0) {
+            throw ApiError.forbidden("Admins can assign tasks only to members");
+        }
+    }
+};
 
 const getTasks = async (user, filter = {}) => { 
     const tasks = await taskRepository.getTasks(user, filter);
@@ -24,8 +49,9 @@ const getAccessibleTaskById = async (taskId, user) => {
     return task;
 };
 
-const createTask = async (taskData) => { 
+const createTask = async (taskData, actor) => { 
     const normalizedTaskData = normalizeTaskInput(taskData);
+    await validateTaskAssignments(actor, normalizedTaskData.assignedTo || []);
     const newTask = await taskRepository.createTask(normalizedTaskData);
     return newTask;
 }; 
@@ -45,9 +71,7 @@ const updateTask = async (task, taskData, user) => {
     task.attachments = normalizedTaskData.attachments || task.attachments;
 
     if (normalizedTaskData.assignedTo) {
-        if (!Array.isArray(normalizedTaskData.assignedTo)) {
-            throw ApiError.badRequest("assignedTo must be an array of user IDs");
-        }
+        await validateTaskAssignments(user, normalizedTaskData.assignedTo);
         task.assignedTo = normalizedTaskData.assignedTo;
     }
 
