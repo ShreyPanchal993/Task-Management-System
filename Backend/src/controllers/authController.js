@@ -1,20 +1,14 @@
-import express from "express";
 import * as authService from "../services/authService.js";
-import logger from "../config/logger.js";
 import ApiSuccess from "../utils/ApiSuccess.js";
 import ApiError from "../utils/ApiError.js";
-import httpStatus from "http-status";
 import { clearAuthCookies, setAuthCookies } from "../utils/cookieOptions.js";
 import { clearCsrfCookie, setCsrfCookie } from "../utils/csrf.js";
 
-const getRequestContext = (req, extra = {}) => ({
-    method: req.method,
-    url: req.originalUrl,
-    origin: req.get("origin") || null,
-    userId: req.user?._id?.toString?.() || req.user?.id || null,
-    ip: req.ip,
-    ...extra,
-});
+const resolveApiError = (error) => (
+    error instanceof ApiError
+        ? error
+        : ApiError.internal(error.message)
+);
 
 const registerUser = async (req, res) => {
     try{
@@ -35,15 +29,9 @@ const registerUser = async (req, res) => {
         });
         const csrfToken = setCsrfCookie(res);
 
-        logger.info("User registered", getRequestContext(req, { email }));
         return ApiSuccess.created(res, "User registered successfully", { user: response.user, csrfToken });
     }catch(error){
-        logger.error("Registration failed", getRequestContext(req, {
-            email: req.body?.email || null,
-            error: error.message,
-            stack: error.stack,
-        }));
-        const apiError = ApiError.internal(error.message);
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
 };
@@ -61,15 +49,9 @@ const loginUser = async (req, res) => {
         });
         const csrfToken = setCsrfCookie(res);
 
-        logger.info("User logged in", getRequestContext(req, { email }));
         return ApiSuccess.ok(res, "User logged in successfully", { user: response.user, csrfToken });
     }catch(error){
-        logger.error("Login failed", getRequestContext(req, {
-            email: req.body?.email || null,
-            error: error.message,
-            stack: error.stack,
-        }));
-        const apiError = ApiError.internal(error.message);
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
 };
@@ -82,11 +64,7 @@ const getUserProfile = async (req, res) => {
 
         return ApiSuccess.ok(res, "User profile fetched successfully", user);
     }catch(error){
-        logger.error("Get profile failed", getRequestContext(req, {
-            error: error.message,
-            stack: error.stack,
-        }));
-        const apiError = ApiError.internal(error.message);
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
 };
@@ -103,15 +81,9 @@ const updateUserProfile = async (req, res) => {
 
         const updatedUser = await authService.updateUserProfile(userId, { name, email, profilePicture, currentPassword, newPassword });
 
-        logger.info("User profile updated", getRequestContext(req, { userId, email: email || null }));
         return ApiSuccess.ok(res, "User profile updated successfully", updatedUser);
     }catch(error){
-        logger.error("Update profile failed", getRequestContext(req, {
-            email: req.body?.email || null,
-            error: error.message,
-            stack: error.stack,
-        }));
-        const apiError = ApiError.internal(error.message);
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
 };
@@ -124,17 +96,9 @@ const logoutUser = async (req, res) => {
         }
         clearAuthCookies(res);
         clearCsrfCookie(res);
-        logger.info("User logged out", getRequestContext(req, {
-            hadRefreshCookie: Boolean(refreshToken),
-        }));
         return ApiSuccess.ok(res, "User logged out successfully");
     }catch(error){
-        logger.error("Logout failed", getRequestContext(req, {
-            error: error.message,
-            stack: error.stack,
-            hasRefreshCookie: Boolean(req.cookies?.refreshToken),
-        }));
-        const apiError = ApiError.internal(error.message);
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
 };
@@ -156,18 +120,10 @@ const refreshToken = async (req, res) => {
         });
         const csrfToken = setCsrfCookie(res);
         
-        logger.info("Token refreshed", getRequestContext(req, {
-            hasRefreshCookie: Boolean(refreshToken),
-        }));
         return ApiSuccess.ok(res, "Token refreshed successfully", { csrfToken });
     }catch(error){
         clearAuthCookies(res);
         clearCsrfCookie(res);
-        logger.error("Token refresh failed", getRequestContext(req, {
-            error: error.message,
-            stack: error.stack,
-            hasRefreshCookie: Boolean(req.cookies?.refreshToken),
-        }));
         const apiError = ApiError.forbidden("Invalid or expired refresh token");
         return res.status(apiError.statusCode).json(apiError);
     }

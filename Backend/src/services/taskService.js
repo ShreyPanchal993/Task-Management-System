@@ -1,5 +1,6 @@
 import * as taskRepository from '../repositories/taskRepository.js';
 import { normalizeTaskInput } from "../utils/inputSecurity.js";
+import ApiError from "../utils/ApiError.js";
 
 const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
 
@@ -9,7 +10,17 @@ const getTasks = async (user, filter = {}) => {
 };
 
 const getTaskById = async (taskId) => { 
-    const task = await taskRepository.getTaskById(taskId);   
+    const task = await taskRepository.getTaskById(taskId);
+    return task;
+};
+
+const getAccessibleTaskById = async (taskId, user) => {
+    const task = await taskRepository.getTaskById(taskId, user);
+
+    if (!task) {
+        throw ApiError.notFound("Task not found");
+    }
+
     return task;
 };
 
@@ -20,6 +31,10 @@ const createTask = async (taskData) => {
 }; 
 
 const updateTask = async (task, taskData, user) => { 
+    if (!canManageAllTasks(user)) {
+        throw ApiError.forbidden("Only admins can update task details");
+    }
+
     const normalizedTaskData = normalizeTaskInput(taskData);
 
     task.title = normalizedTaskData.title || task.title;
@@ -31,7 +46,7 @@ const updateTask = async (task, taskData, user) => {
 
     if (normalizedTaskData.assignedTo) {
         if (!Array.isArray(normalizedTaskData.assignedTo)) {
-            throw new Error('assignedTo must be an array of user IDs');
+            throw ApiError.badRequest("assignedTo must be an array of user IDs");
         }
         task.assignedTo = normalizedTaskData.assignedTo;
     }
@@ -48,7 +63,7 @@ const deleteTask = async (taskId) => {
 const updateTaskStatus = async (task, status, user) => { 
     const isAssigned = task.assignedTo.some(userId => userId.toString() === user._id.toString());
     if (!canManageAllTasks(user) && !isAssigned) {
-        throw new Error("Unauthorized to update this task's status");
+        throw ApiError.forbidden("Unauthorized to update this task's status");
     }
     
     task.status = status;
@@ -94,6 +109,7 @@ const getUserDashboardData = async (userId) => {
 export { 
     getTasks, 
     getTaskById,
+    getAccessibleTaskById,
     createTask,
     updateTask,
     deleteTask,
