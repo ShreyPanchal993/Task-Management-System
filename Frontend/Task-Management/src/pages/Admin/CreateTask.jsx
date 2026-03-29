@@ -14,6 +14,32 @@ import AddAttachmentsInputs from '../../components/Inputs/AddAttachmentsInputs'
 import Modal from '../../components/Modal'
 import DeleteAlert from '../../components/DeleteAlert'
 
+const DATE_FORMAT = "DD/MM/YYYY";
+const getTodayDateString = () => moment().format(DATE_FORMAT);
+const formatDueDateForInput = (value = "") => {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+
+  if (digits.length <= 2) {
+    return digits;
+  }
+
+  if (digits.length <= 4) {
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+};
+
+const parseDueDateToIsoString = (value) => {
+  const parsedDate = moment(value, DATE_FORMAT, true);
+
+  if (!parsedDate.isValid()) {
+    return null;
+  }
+
+  return parsedDate.startOf("day").toISOString();
+};
+
 const CreateTask = () => {
   const location = useLocation();
   const { taskId } = location.state || {};
@@ -23,7 +49,7 @@ const CreateTask = () => {
     title: "",
     description: "",
     priority: PRIORITY_DATA[0].value,
-    dueDate: null,
+    dueDate: getTodayDateString(),
     assignedTo: [],
     todoChecklist: [],
     attachments: [],
@@ -46,7 +72,7 @@ const CreateTask = () => {
       title: "",
       description: "",
       priority: PRIORITY_DATA[0].value,
-      dueDate: null,
+      dueDate: getTodayDateString(),
       assignedTo: [],
       todoChecklist: [],
       attachments: [],
@@ -65,7 +91,7 @@ const CreateTask = () => {
 
       const response = await axiosInstance.post(API_PATHS.TASKS.CREATE_TASK, {
         ...taskData,
-        dueDate: new Date(taskData.dueDate).toISOString(),
+        dueDate: parseDueDateToIsoString(taskData.dueDate),
         todoChecklist: todoList,
       });
 
@@ -99,7 +125,7 @@ const CreateTask = () => {
       await axiosInstance.put(API_PATHS.TASKS.UPDATE_TASK(taskId),
         {
         ...taskData,
-        dueDate: new Date(taskData.dueDate).toISOString(),
+        dueDate: parseDueDateToIsoString(taskData.dueDate),
         todoChecklist: todoList,
       });
 
@@ -126,6 +152,11 @@ const CreateTask = () => {
     }
     if (!taskData.dueDate) {
       setError("Due date is required");
+      return;
+    }
+
+    if (!moment(taskData.dueDate, DATE_FORMAT, true).isValid()) {
+      setError("Due date must be in DD/MM/YYYY format");
       return;
     }
 
@@ -160,7 +191,7 @@ const CreateTask = () => {
           title: taskInfo.title,
           description: taskInfo.description,
           priority: taskInfo.priority,
-          dueDate: taskInfo.dueDate ? moment(taskInfo.dueDate).format("YYYY-MM-DD") : null,
+          dueDate: taskInfo.dueDate ? moment(taskInfo.dueDate).format(DATE_FORMAT) : getTodayDateString(),
           assignedTo: taskInfo?.assignedTo?.map((item) => item._id) || [],
           todoChecklist: taskInfo?.todoChecklist?.map((item) => item.text) || [],
           attachments: taskInfo?.attachments || [],
@@ -267,13 +298,15 @@ const CreateTask = () => {
                   </label>
 
                   <input 
-                    placeholder="Crate App UI"
+                    placeholder="DD/MM/YYYY"
                     className="form-input mt-1.5"
                     value={taskData.dueDate}
                     onChange={({ target }) => 
-                      handleValueChange("dueDate", target.value)
+                      handleValueChange("dueDate", formatDueDateForInput(target.value))
                     } 
-                    type="date"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={10}
                   />
                 </div>
 
