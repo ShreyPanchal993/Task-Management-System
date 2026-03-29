@@ -1,4 +1,5 @@
 import React from 'react'
+import resolveImageUrl from '../utils/resolveImageUrl';
 
 const AvatarGroup = ({ avatars, maxVisible}) => {
     return (
@@ -6,7 +7,7 @@ const AvatarGroup = ({ avatars, maxVisible}) => {
             {avatars.slice(0, maxVisible).map((avatar, index) => (
                 <img 
                     key={index} 
-                    src={avatar}
+                    src={resolveImageUrl(avatar)}
                     alt={`Avatar ${index}`}
                     className="w-9 h-9 rounded-full border-2 border-white/85 shadow-sm -ml-3 first:ml-0 object-cover"
                 />
