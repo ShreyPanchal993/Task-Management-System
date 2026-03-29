@@ -55,7 +55,7 @@ const createTask = async (req, res) => {
             createdBy: req.user._id,
             attachments, 
             todoChecklist
-        });
+        }, req.user);
 
         return ApiSuccess.created(res, "Task created successfully", newTask);
     } catch (error) {
