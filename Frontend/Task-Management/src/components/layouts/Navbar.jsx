@@ -83,8 +83,8 @@ const Navbar = ({ activeMenu }) => {
             return;
         }
 
-        if (newPassword.length < 6) {
-            setPasswordError('New password must be at least 6 characters.');
+        if (newPassword.length < 8) {
+            setPasswordError('New password must be at least 8 characters.');
             return;
         }
 
@@ -246,7 +246,7 @@ const Navbar = ({ activeMenu }) => {
                                         value={newPassword}
                                         onChange={(e) => setNewPassword(e.target.value)}
                                         label="New Password"
-                                        placeholder="Min. 6 characters"
+                                        placeholder="Min. 8 characters"
                                         type="password"
                                     />
                                     <Input

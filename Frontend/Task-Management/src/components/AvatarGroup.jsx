@@ -1,15 +1,17 @@
 import React from 'react'
-import resolveImageUrl from '../utils/resolveImageUrl';
+import Avatar from './Avatar';
 
 const AvatarGroup = ({ avatars, maxVisible}) => {
     return (
         <div className="flex items-center">
             {avatars.slice(0, maxVisible).map((avatar, index) => (
-                <img 
-                    key={index} 
-                    src={resolveImageUrl(avatar)}
-                    alt={`Avatar ${index}`}
+                <Avatar
+                    key={index}
+                    src={avatar}
+                    name={`User ${index + 1}`}
+                    alt={`Avatar ${index + 1}`}
                     className="w-9 h-9 rounded-full border-2 border-white/85 shadow-sm -ml-3 first:ml-0 object-cover"
+                    fallbackClassName="w-9 h-9 flex items-center justify-center rounded-full border-2 border-white/85 shadow-sm -ml-3 first:ml-0 bg-slate-200 text-xs font-semibold text-slate-600"
                 />
             ))}
             {avatars.length > maxVisible && (
