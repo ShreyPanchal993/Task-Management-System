@@ -53,11 +53,21 @@ const createTask = async (taskData) => {
 };
 
 const updateTask = async (taskData) => {
-    const assignedToIds = taskData.assignedTo?.map(user => user._id || user) || taskData.assignedTo;
+    const assignedToIds = taskData.assignedTo?.map(user => user._id || user) || [];
     const updatedTask = await Task.findByIdAndUpdate(
         taskData._id, 
-        { ...taskData, assignedTo: assignedToIds }, 
-        { new: true }
+        { 
+            title: taskData.title,
+            description: taskData.description,
+            priority: taskData.priority,
+            status: taskData.status,
+            dueDate: taskData.dueDate,
+            assignedTo: assignedToIds,
+            attachments: taskData.attachments,
+            todoChecklist: taskData.todoChecklist,
+            progress: taskData.progress,
+        }, 
+        { new: true, runValidators: true }
     ).populate(taskListPopulate);
     return updatedTask;
 };
