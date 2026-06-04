@@ -66,16 +66,20 @@ const SignUp = () => {
 
         if (user) {
           if (profilePicture) {
-            const imageUploadRes = await uploadImage(profilePicture);
-            uploadedImageUrl = imageUploadRes.url;
+            try {
+              const imageUploadRes = await uploadImage(profilePicture);
+              uploadedImageUrl = imageUploadRes.url;
 
-            const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
-              name: fullName,
-              email,
-              profilePicture: uploadedImageUrl,
-            });
+              const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
+                name: fullName,
+                email,
+                profilePicture: uploadedImageUrl,
+              });
 
-            user = profileUpdateResponse.data.data;
+              user = profileUpdateResponse.data.data;
+            } catch {
+              // Profile picture upload failed — continue with account without picture
+            }
           }
 
           updateUser(user);

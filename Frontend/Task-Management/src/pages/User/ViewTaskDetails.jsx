@@ -62,6 +62,7 @@ const ViewTaskDetails = () => {
       }
     } catch (error) {
       todoChecklist[index].completed = !todoChecklist[index]?.completed;
+      toast.error(error.response?.data?.message || "Failed to update checklist. Please try again.");
     }
   };
 

@@ -53,7 +53,7 @@ export const SIDE_MENU_USER_DATA = [
         path: "/user/tasks"
     },
     {
-        id: "05",
+        id: "03",
         label: "Logout",
         icon: LuLogOut,
         path: "logout"

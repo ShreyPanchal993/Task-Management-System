@@ -62,7 +62,7 @@ const ManageTasks = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error("Failed to download expense details. Please try again.");
+      toast.error("Failed to download task report. Please try again.");
     }
   };
 

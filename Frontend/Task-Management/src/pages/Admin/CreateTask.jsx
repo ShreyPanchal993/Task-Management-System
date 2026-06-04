@@ -114,7 +114,6 @@ const CreateTask = () => {
       clearData();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to create task.");
-      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -146,7 +145,6 @@ const CreateTask = () => {
       toast.success("Task updated successfully!");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update task.");
-      setLoading(false);
     } finally {
       setLoading(false)
     }
@@ -222,7 +220,7 @@ const CreateTask = () => {
       await axiosInstance.delete(API_PATHS.TASKS.DELETE_TASK(taskId));
 
       setOpenDeleteAlert(false);
-      toast.success("Expense details deleted successfully");
+      toast.success("Task deleted successfully");
       navigate("/admin/tasks");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete task.");
