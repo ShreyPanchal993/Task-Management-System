@@ -91,7 +91,7 @@ const deleteTask = async (taskId) => {
 };   
 
 const updateTaskStatus = async (task, status, user) => { 
-    const isAssigned = task.assignedTo.some(userId => userId.toString() === user._id.toString());
+    const isAssigned = task.assignedTo.some(u => (u._id || u).toString() === user._id.toString());
     if (!canManageAllTasks(user) && !isAssigned) {
         throw ApiError.forbidden("Unauthorized to update this task's status");
     }
