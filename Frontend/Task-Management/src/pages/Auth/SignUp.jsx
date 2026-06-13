@@ -31,7 +31,20 @@ const SignUp = () => {
     }
   };
 
-  const handleSingUp = async (e) => {
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return null;
+    if (pwd.length < 6) return { label: "Too short", color: "bg-red-400", width: "w-1/4" };
+    if (pwd.length < 8) return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
+    const hasUpper = /[A-Z]/.test(pwd);
+    const hasNumber = /[0-9]/.test(pwd);
+    const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+    const score = [hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+    if (score === 3) return { label: "Strong", color: "bg-emerald-500", width: "w-full" };
+    if (score >= 1) return { label: "Fair", color: "bg-yellow-400", width: "w-3/4" };
+    return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
+  };
+
+  const passwordStrength = getPasswordStrength(password);
       e.preventDefault();
 
       let uploadedImageUrl = '';
@@ -86,7 +99,11 @@ const SignUp = () => {
           navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
         }
       }catch (signupError) {
-        setError(signupError.response?.data?.message || "Something went wrong. Please try again later.");
+        const message =
+          signupError.response?.data?.message ||
+          signupError.message ||
+          "Something went wrong. Please try again later.";
+        setError(message);
       } finally {
         setIsLoading(false);
       }
@@ -204,6 +221,25 @@ const SignUp = () => {
                       {showPassword ? <LuEye /> : <LuEyeOff />}
                     </button>
                   </div>
+
+                  {/* Password strength indicator */}
+                  {password && passwordStrength && (
+                    <div className="mt-2">
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color} ${passwordStrength.width}`}
+                        />
+                      </div>
+                      <p className={`text-xs mt-1 font-medium ${
+                        passwordStrength.label === "Strong" ? "text-emerald-600"
+                        : passwordStrength.label === "Fair" ? "text-yellow-600"
+                        : "text-red-500"
+                      }`}>
+                        {passwordStrength.label}
+                        {passwordStrength.label !== "Strong" && " — min 8 chars, uppercase, number & symbol recommended"}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {error && (
