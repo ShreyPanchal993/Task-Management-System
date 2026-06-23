@@ -4,7 +4,7 @@ import { PRIORITY_DATA } from '../../utils/data.js'
 import axiosInstance from '../../utils/axiosInstance.js'
 import { API_PATHS } from '../../utils/apiPaths.js'
 import toast from 'react-hot-toast'
-import { useNavigate, useLocation, useBlocker } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import moment from 'moment'
 import { LuCalendarDays, LuTrash2 } from 'react-icons/lu';
 import SelectDropDown from '../../components/Inputs/SelectDropdown'
@@ -13,12 +13,14 @@ import TodoListInput from '../../components/Inputs/TodoListInput'
 import AddAttachmentsInputs from '../../components/Inputs/AddAttachmentsInputs'
 import Modal from '../../components/Modal'
 import DeleteAlert from '../../components/DeleteAlert'
+import { useUserAuth } from '../../hooks/useUserAuth'
 
 const DATE_FORMAT = "DD/MM/YYYY";
-const EMPTY_FORM = (priority = PRIORITY_DATA[0].value) => ({
+
+const EMPTY_FORM = () => ({
   title: "",
   description: "",
-  priority,
+  priority: PRIORITY_DATA[0].value,
   dueDate: moment().format(DATE_FORMAT),
   assignedTo: [],
   todoChecklist: [],
@@ -39,6 +41,8 @@ const parseDueDateToIsoString = (value) => {
 };
 
 const CreateTask = () => {
+  useUserAuth();
+
   const location = useLocation();
   const { taskId } = location.state || {};
   const navigate = useNavigate();
@@ -49,16 +53,45 @@ const CreateTask = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+  const [openLeaveAlert, setOpenLeaveAlert] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const pendingNavRef = useRef(null);
 
-  // Unsaved-changes guard — block navigation when form has been touched
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty &&
-      !submitted &&
-      currentLocation.pathname !== nextLocation.pathname
-  );
+  // Warn on browser tab close / refresh when form is dirty
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Safe navigate — shows confirmation modal when form is dirty
+  const safeNavigate = (path, options) => {
+    if (isDirty) {
+      pendingNavRef.current = { path, options };
+      setOpenLeaveAlert(true);
+    } else {
+      navigate(path, options);
+    }
+  };
+
+  const confirmLeave = () => {
+    setOpenLeaveAlert(false);
+    setIsDirty(false);
+    if (pendingNavRef.current) {
+      navigate(pendingNavRef.current.path, pendingNavRef.current.options);
+      pendingNavRef.current = null;
+    }
+  };
+
+  const cancelLeave = () => {
+    setOpenLeaveAlert(false);
+    pendingNavRef.current = null;
+  };
 
   const handleValueChange = (key, value) => {
     setTaskData((prev) => ({ ...prev, [key]: value }));
@@ -68,7 +101,6 @@ const CreateTask = () => {
   const clearData = () => {
     setTaskData(EMPTY_FORM());
     setIsDirty(false);
-    setSubmitted(false);
   };
 
   const openDatePicker = () => {
@@ -80,7 +112,6 @@ const CreateTask = () => {
     hiddenDateInputRef.current.click();
   };
 
-  // Create Task
   const createTask = async () => {
     setLoading(true);
     try {
@@ -95,7 +126,7 @@ const CreateTask = () => {
         todoChecklist: todoList,
       });
 
-      setSubmitted(true);
+      setIsDirty(false);
       toast.success("Task created successfully!");
       clearData();
     } catch (err) {
@@ -105,7 +136,6 @@ const CreateTask = () => {
     }
   };
 
-  // Update Task
   const updateTask = async () => {
     setLoading(true);
     try {
@@ -121,7 +151,6 @@ const CreateTask = () => {
         todoChecklist: todoList,
       });
 
-      setSubmitted(true);
       setIsDirty(false);
       toast.success("Task updated successfully!");
     } catch (err) {
@@ -147,7 +176,6 @@ const CreateTask = () => {
     createTask();
   };
 
-  // Load task for editing
   const getTaskDetailsByID = async () => {
     try {
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_TASK_BY_ID(taskId));
@@ -158,7 +186,9 @@ const CreateTask = () => {
           title: taskInfo.title,
           description: taskInfo.description,
           priority: taskInfo.priority,
-          dueDate: taskInfo.dueDate ? moment(taskInfo.dueDate).format(DATE_FORMAT) : moment().format(DATE_FORMAT),
+          dueDate: taskInfo.dueDate
+            ? moment(taskInfo.dueDate).format(DATE_FORMAT)
+            : moment().format(DATE_FORMAT),
           assignedTo: taskInfo?.assignedTo?.map((item) => item._id) || [],
           todoChecklist: taskInfo?.todoChecklist?.map((item) => item.text) || [],
           attachments: taskInfo?.attachments || [],
@@ -170,12 +200,10 @@ const CreateTask = () => {
     }
   };
 
-  // Delete Task
   const deleteTask = async () => {
     try {
       await axiosInstance.delete(API_PATHS.TASKS.DELETE_TASK(taskId));
       setOpenDeleteAlert(false);
-      setSubmitted(true);
       setIsDirty(false);
       toast.success("Task deleted successfully");
       navigate("/admin/tasks");
@@ -188,10 +216,8 @@ const CreateTask = () => {
     if (taskId) {
       getTaskDetailsByID();
     }
-    return () => {};
   }, [taskId]);
 
-  // When editing, the active sidebar item should be "Manage Tasks" not "Create Task"
   const activeMenuLabel = taskId ? "Manage Tasks" : "Create Task";
 
   return (
@@ -351,8 +377,8 @@ const CreateTask = () => {
 
       {/* Unsaved changes guard modal */}
       <Modal
-        isOpen={blocker.state === "blocked"}
-        onClose={() => blocker.reset?.()}
+        isOpen={openLeaveAlert}
+        onClose={cancelLeave}
         title="Unsaved Changes"
       >
         <p className="text-sm text-slate-600">
@@ -362,14 +388,14 @@ const CreateTask = () => {
           <button
             type="button"
             className="btn-secondary px-5"
-            onClick={() => blocker.reset?.()}
+            onClick={cancelLeave}
           >
             Stay
           </button>
           <button
             type="button"
             className="flex items-center justify-center gap-1.5 text-sm font-semibold text-rose-700 bg-rose-100/80 border border-rose-200 rounded-full px-5 py-2"
-            onClick={() => blocker.proceed?.()}
+            onClick={confirmLeave}
           >
             Leave anyway
           </button>

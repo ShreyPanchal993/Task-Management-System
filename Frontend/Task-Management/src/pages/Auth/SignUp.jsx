@@ -8,6 +8,19 @@ import uploadImage from "../../utils/uploadImage.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
 
+const getPasswordStrength = (pwd) => {
+  if (!pwd) return null;
+  if (pwd.length < 6) return { label: "Too short", color: "bg-red-400", width: "w-1/4" };
+  if (pwd.length < 8) return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
+  const hasUpper = /[A-Z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
+  const score = [hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+  if (score === 3) return { label: "Strong", color: "bg-emerald-500", width: "w-full" };
+  if (score >= 1) return { label: "Fair", color: "bg-yellow-400", width: "w-3/4" };
+  return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
+};
+
 const SignUp = () => {
   const [profilePicture, setProfilePicture] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -15,101 +28,88 @@ const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
+  const passwordStrength = getPasswordStrength(password);
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-
     if (file) {
       setProfilePicture(file);
       setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const getPasswordStrength = (pwd) => {
-    if (!pwd) return null;
-    if (pwd.length < 6) return { label: "Too short", color: "bg-red-400", width: "w-1/4" };
-    if (pwd.length < 8) return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
-    const hasUpper = /[A-Z]/.test(pwd);
-    const hasNumber = /[0-9]/.test(pwd);
-    const hasSpecial = /[^A-Za-z0-9]/.test(pwd);
-    const score = [hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
-    if (score === 3) return { label: "Strong", color: "bg-emerald-500", width: "w-full" };
-    if (score >= 1) return { label: "Fair", color: "bg-yellow-400", width: "w-3/4" };
-    return { label: "Weak", color: "bg-orange-400", width: "w-2/4" };
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+
+    let uploadedImageUrl = '';
+
+    if (!fullName) {
+      setError("Please enter full name.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter the password.");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        name: fullName,
+        email,
+        password,
+        profilePicture: uploadedImageUrl,
+      });
+
+      let { user } = response.data.data;
+
+      if (user) {
+        if (profilePicture) {
+          try {
+            const imageUploadRes = await uploadImage(profilePicture);
+            uploadedImageUrl = imageUploadRes.url;
+
+            const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
+              name: fullName,
+              email,
+              profilePicture: uploadedImageUrl,
+            });
+
+            user = profileUpdateResponse.data.data;
+          } catch {
+            // Profile picture upload failed — continue with account without picture
+          }
+        }
+
+        updateUser(user);
+        navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
+      }
+    } catch (signupError) {
+      const message =
+        signupError.response?.data?.message ||
+        signupError.message ||
+        "Something went wrong. Please try again later.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const passwordStrength = getPasswordStrength(password);
-      e.preventDefault();
-
-      let uploadedImageUrl = '';
-
-      if (!fullName) {
-        setError("Please enter full name.");
-        return;
-      }
-  
-      if (!validateEmail(email)) {
-        setError("Please enter a valid email address.");
-        return;
-      }
-  
-      if (!password) {
-        setError("Please enter the password.");
-        return;
-      }
-  
-      setError("");
-      setIsLoading(true);
-  
-      try{
-        const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
-          name: fullName,
-          email,
-          password,
-          profilePicture: uploadedImageUrl,
-        });
-
-        let { user } = response.data.data;
-
-        if (user) {
-          if (profilePicture) {
-            try {
-              const imageUploadRes = await uploadImage(profilePicture);
-              uploadedImageUrl = imageUploadRes.url;
-
-              const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
-                name: fullName,
-                email,
-                profilePicture: uploadedImageUrl,
-              });
-
-              user = profileUpdateResponse.data.data;
-            } catch {
-              // Profile picture upload failed — continue with account without picture
-            }
-          }
-
-          updateUser(user);
-          navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
-        }
-      }catch (signupError) {
-        const message =
-          signupError.response?.data?.message ||
-          signupError.message ||
-          "Something went wrong. Please try again later.";
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-  return(
+  return (
     <div className="auth-shell">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-12 h-72 w-72 rounded-full blur-3xl opacity-35" style={{ background: "rgba(40, 80, 217, 0.18)" }} />
@@ -163,7 +163,7 @@ const SignUp = () => {
               <h3 className="text-3xl font-semibold text-slate-900 mt-2">Create Your Account</h3>
               <p className="text-slate-500 mt-2 mb-5">Set up your profile and start organizing work.</p>
 
-              <form onSubmit={handleSingUp} className="space-y-3.5">
+              <form onSubmit={handleSignUp} className="space-y-3.5">
                 <div className="flex justify-center mb-4">
                   <div className="relative group">
                     <div className="w-20 h-20 rounded-full border border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-white/70 shadow-sm">
@@ -264,8 +264,8 @@ const SignUp = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 const FeatureItem = ({ icon: Icon, title, text }) => (
   <div className="flex items-start gap-3 rounded-[20px] border border-white/15 bg-white/8 px-4 py-3 backdrop-blur-sm">
@@ -279,4 +279,4 @@ const FeatureItem = ({ icon: Icon, title, text }) => (
   </div>
 );
 
-export default SignUp
+export default SignUp;
