@@ -2,18 +2,18 @@ import React, { useContext, useEffect, useState } from 'react'
 import DashboardLayout from '../../components/layouts/DashboardLayout'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
-import { LuFileSpreadsheet } from 'react-icons/lu';
+import { LuFileSpreadsheet, LuUsers } from 'react-icons/lu';
 import UserCard from '../../components/Cards/UserCard';
 import toast from 'react-hot-toast';
 import { UserContext } from '../../context/userContext';
 
 const ManageUsers = () => {
-  const { user: currentUser } = useContext(UserContext);
+  const { user: currentUser, updateUser } = useContext(UserContext);
   const [allUsers, setAllUsers] = useState([]);
   const [roleUpdateId, setRoleUpdateId] = useState(null);
-  
+
   const getAllUsers = async () => {
-    try{
+    try {
       const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
       setAllUsers(response.data?.data || []);
     } catch (error) {
@@ -23,9 +23,7 @@ const ManageUsers = () => {
 
   const handleRoleChange = async (userId, role) => {
     const targetUser = allUsers.find((item) => item._id === userId);
-    if (!targetUser || targetUser.role === role) {
-      return;
-    }
+    if (!targetUser || targetUser.role === role) return;
 
     setRoleUpdateId(userId);
 
@@ -36,6 +34,17 @@ const ManageUsers = () => {
       setAllUsers((prevUsers) =>
         prevUsers.map((item) => (item._id === updatedUser._id ? { ...item, ...updatedUser } : item))
       );
+
+      // If the changed user is the currently logged-in user, refresh their context
+      if (updatedUser._id === currentUser?._id || updatedUser._id === currentUser?.id) {
+        try {
+          const profileRes = await axiosInstance.get(API_PATHS.AUTH.GET_PROFILE);
+          updateUser(profileRes.data?.data || profileRes.data);
+        } catch {
+          // non-blocking — context will refresh on next page load
+        }
+      }
+
       toast.success(`User role updated to ${role.replace("_", " ")}.`);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update user role.");
@@ -44,9 +53,8 @@ const ManageUsers = () => {
     }
   };
 
-  //download task report
   const handleDownloadReport = async () => {
-    try{
+    try {
       const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_USERS, {
         responseType: 'blob',
       });
@@ -60,15 +68,14 @@ const ManageUsers = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error("Failed to download expense details. Please try again.");
+      toast.error("Failed to download user report. Please try again.");
     }
-  }
+  };
 
   useEffect(() => {
     getAllUsers();
-
-    return () => {}
-  }, [])
+    return () => {};
+  }, []);
 
   return (
     <DashboardLayout activeMenu="Team Members">
@@ -79,27 +86,44 @@ const ManageUsers = () => {
             <h2 className="page-title mt-2">Team Members</h2>
           </div>
 
-          <button className="flex md:flex download-btn" onClick={handleDownloadReport}>
-            <LuFileSpreadsheet className="text-lg"/>
+          <button className="flex download-btn" onClick={handleDownloadReport}>
+            <LuFileSpreadsheet className="text-lg" />
             Download Report
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {allUsers?.map((teamMember, index) => (
-            <div key={teamMember._id} className="animate-scale-in" style={{animationDelay: `${index * 0.05}s`}}>
-              <UserCard
-                userInfo={teamMember}
-                canManageRoles={currentUser?.role === "super_admin"}
-                isUpdatingRole={roleUpdateId === teamMember._id}
-                onRoleChange={handleRoleChange}
-              />
+        {allUsers.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ background: "rgba(40, 80, 217, 0.08)" }}
+            >
+              <LuUsers className="text-2xl text-primary" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-base font-semibold text-slate-700">No team members yet</h3>
+            <p className="text-sm text-slate-400 mt-1">Members will appear here once they sign up.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {allUsers.map((teamMember, index) => (
+              <div
+                key={teamMember._id}
+                className="animate-scale-in"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <UserCard
+                  userInfo={teamMember}
+                  canManageRoles={currentUser?.role === "super_admin"}
+                  isUpdatingRole={roleUpdateId === teamMember._id}
+                  onRoleChange={handleRoleChange}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
-  )
-}
+  );
+};
 
-export default ManageUsers
+export default ManageUsers;

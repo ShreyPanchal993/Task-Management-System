@@ -2,8 +2,7 @@ import * as taskRepository from '../repositories/taskRepository.js';
 import * as userRepository from "../repositories/userRepository.js";
 import { normalizeTaskInput } from "../utils/inputSecurity.js";
 import ApiError from "../utils/ApiError.js";
-
-const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+import { canManageAllTasks } from "../utils/taskHelpers.js";
 
 const validateTaskAssignments = async (actor, assignedTo = []) => {
     if (!Array.isArray(assignedTo)) {
@@ -91,7 +90,7 @@ const deleteTask = async (taskId) => {
 };   
 
 const updateTaskStatus = async (task, status, user) => { 
-    const isAssigned = task.assignedTo.some(userId => userId.toString() === user._id.toString());
+    const isAssigned = task.assignedTo.some(u => (u._id || u).toString() === user._id.toString());
     if (!canManageAllTasks(user) && !isAssigned) {
         throw ApiError.forbidden("Unauthorized to update this task's status");
     }

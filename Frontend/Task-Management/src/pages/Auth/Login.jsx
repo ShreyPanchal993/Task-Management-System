@@ -46,7 +46,11 @@ const Login = () => {
           navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
         }
       }catch (loginError) {
-        setError(loginError.response?.data?.message || "Something went wrong. Please try again later.");
+        const message =
+          loginError.response?.data?.message ||
+          loginError.message ||
+          "Something went wrong. Please try again later.";
+        setError(message);
       } finally {
         setIsLoading(false);
       }
