@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
 import Avatar from '../Avatar';
+import resolveImageUrl from '../../utils/resolveImageUrl';
 
 const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExisting }) => {
     const inputRef = useRef(null);

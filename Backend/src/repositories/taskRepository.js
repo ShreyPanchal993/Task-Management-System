@@ -1,7 +1,6 @@
 import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
-
-const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+import { canManageAllTasks } from "../utils/taskHelpers.js";
 const taskListPopulate = { path: "assignedTo", select: "name email profilePicture" };
 const buildTaskVisibilityFilter = (user, filter = {}) =>
     canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };
@@ -53,11 +52,21 @@ const createTask = async (taskData) => {
 };
 
 const updateTask = async (taskData) => {
-    const assignedToIds = taskData.assignedTo?.map(user => user._id || user) || taskData.assignedTo;
+    const assignedToIds = taskData.assignedTo?.map(user => user._id || user) || [];
     const updatedTask = await Task.findByIdAndUpdate(
         taskData._id, 
-        { ...taskData, assignedTo: assignedToIds }, 
-        { new: true }
+        { 
+            title: taskData.title,
+            description: taskData.description,
+            priority: taskData.priority,
+            status: taskData.status,
+            dueDate: taskData.dueDate,
+            assignedTo: assignedToIds,
+            attachments: taskData.attachments,
+            todoChecklist: taskData.todoChecklist,
+            progress: taskData.progress,
+        }, 
+        { new: true, runValidators: true }
     ).populate(taskListPopulate);
     return updatedTask;
 };
