@@ -2,8 +2,7 @@ import * as taskRepository from '../repositories/taskRepository.js';
 import * as userRepository from "../repositories/userRepository.js";
 import { normalizeTaskInput } from "../utils/inputSecurity.js";
 import ApiError from "../utils/ApiError.js";
-
-const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+import { canManageAllTasks } from "../utils/taskHelpers.js";
 
 const validateTaskAssignments = async (actor, assignedTo = []) => {
     if (!Array.isArray(assignedTo)) {

@@ -1,7 +1,6 @@
 import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
-
-const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+import { canManageAllTasks } from "../utils/taskHelpers.js";
 const taskListPopulate = { path: "assignedTo", select: "name email profilePicture" };
 const buildTaskVisibilityFilter = (user, filter = {}) =>
     canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };

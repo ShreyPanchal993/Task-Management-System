@@ -24,7 +24,12 @@ axiosInstance.interceptors.request.use(
         const isCsrfBootstrapRequest = config.url === API_PATHS.AUTH.CSRF_TOKEN;
 
         if (needsCsrfProtection && !isCsrfBootstrapRequest) {
-            await ensureCsrfToken();
+            try {
+                await ensureCsrfToken();
+            } catch {
+                // CSRF fetch failed — proceed anyway; the server will reject
+                // with 403 if the token is truly required, giving a clear error.
+            }
             const csrfToken = getCsrfToken();
 
             if (csrfToken) {
@@ -53,7 +58,17 @@ axiosInstance.interceptors.response.use(
         const isProfileBootstrapRequest = originalRequest?.url === API_PATHS.AUTH.GET_PROFILE;
         const isOnPublicRoute = isPublicPath(currentPath);
 
+        // Don't retry auth endpoints — login/register failures should surface the
+        // real error message (e.g. "Invalid email or password") directly to the UI.
+        const isAuthEndpoint =
+            originalRequest?.url === API_PATHS.AUTH.LOGIN ||
+            originalRequest?.url === API_PATHS.AUTH.REGISTER;
+
         if (isProfileBootstrapRequest && isOnPublicRoute && error.response?.status === 401) {
+            return Promise.reject(error);
+        }
+
+        if (isAuthEndpoint) {
             return Promise.reject(error);
         }
         

@@ -8,7 +8,7 @@ const requiredEnvVars = [
     "SUPABASE_STORAGE_BUCKET",
 ];
 
-const getMissingEnvVars = () => 
+const getMissingEnvVars = () =>
     requiredEnvVars.filter((envVar) => !process.env[envVar]);
 
 const getSupabaseClient = () => {
@@ -20,13 +20,21 @@ const getSupabaseClient = () => {
         );
     }
 
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
     return createClient(
         process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY,
+        serviceRoleKey,
         {
             auth: {
                 persistSession: false,
                 autoRefreshToken: false,
+                detectSessionInUrl: false,
+            },
+            global: {
+                headers: {
+                    Authorization: `Bearer ${serviceRoleKey}`,
+                },
             },
         }
     );
