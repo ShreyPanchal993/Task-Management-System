@@ -11,7 +11,6 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
-import { uploadDirectory } from "./middlewares/uploadMiddleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -96,7 +95,25 @@ app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/reports', reportRoutes);
 
-app.use("/uploads", express.static(uploadDirectory));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-const PORT = process.env.PORT || 5000;
+// Global error handler — catches any unhandled errors and returns structured JSON
+app.use((err, req, res, next) => {
+    logger.error("Unhandled error", {
+        method: req.method,
+        url: req.originalUrl,
+        error: err.message,
+        stack: err.stack,
+        ip: req.ip,
+    });
+
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        success: false,
+        statusCode,
+        message: err.message || "Internal Server Error",
+    });
+});
+
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => logger.info(`Server running on PORT: ${PORT}`));

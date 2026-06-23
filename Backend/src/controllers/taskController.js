@@ -1,8 +1,7 @@
 import * as taskService from '../services/taskService.js';
 import ApiSuccess from '../utils/ApiSuccess.js';
 import ApiError from '../utils/ApiError.js';
-
-const canManageAllTasks = (user) => user.role === "admin" || user.role === "super_admin";
+import { canManageAllTasks } from '../utils/taskHelpers.js';
 
 const resolveApiError = (error) => (
     error instanceof ApiError

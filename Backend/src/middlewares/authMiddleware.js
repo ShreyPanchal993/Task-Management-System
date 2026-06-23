@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
                 hasRefreshCookie: Boolean(req.cookies?.refreshToken),
                 ip: req.ip,
             });
-            return res.status(401).json({ message: "Not authorized, no token" });
+            return res.status(401).json({ success: false, statusCode: 401, message: "Not authorized, no token" });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -32,7 +32,7 @@ const protect = async (req, res, next) => {
                 userId: decoded.id,
                 ip: req.ip,
             });
-            return res.status(401).json({ message: "User not found for token" });
+            return res.status(401).json({ success: false, statusCode: 401, message: "User not found for token" });
         }
 
         next();
@@ -47,7 +47,7 @@ const protect = async (req, res, next) => {
             stack: error.stack,
             ip: req.ip,
         });
-        res.status(401).json({ message: "Token failed" });
+        res.status(401).json({ success: false, statusCode: 401, message: "Token failed" });
     };
 };
 
@@ -62,7 +62,7 @@ const adminOnly = (req, res, next) => {
             role: req.user?.role || null,
             ip: req.ip,
         });
-        res.status(403).json({ message: "Access denied, admin only"});
+        res.status(403).json({ success: false, statusCode: 403, message: "Access denied, admin only"});
     }
 };
 
@@ -77,7 +77,7 @@ const superAdminOnly = (req, res, next) => {
             role: req.user?.role || null,
             ip: req.ip,
         });
-        res.status(403).json({ message: "Access denied, super admin only" });
+        res.status(403).json({ success: false, statusCode: 403, message: "Access denied, super admin only" });
     }
 };
 
