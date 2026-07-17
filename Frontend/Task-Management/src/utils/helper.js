@@ -13,3 +13,13 @@ export const addThousandSeparator = (num) => {
         ? `${formattedInteger}.${fractionalPart}`
         : formattedInteger;
 }
+
+export const extractS3Key = (url) => {
+    if (!url) return null;
+    try {
+        return new URL(url).pathname.slice(1);
+    } catch {
+        return null;
+    }
+};
+

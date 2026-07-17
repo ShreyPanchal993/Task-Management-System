@@ -12,6 +12,17 @@ class ApiError extends Error {
         }
     }
 
+    // Ensures message is always included when res.json(apiError) is called
+    toJSON() {
+        return {
+            name: this.name,
+            statusCode: this.statusCode,
+            success: this.success,
+            message: this.message,
+            ...(this.errors && { errors: this.errors }),
+        };
+    }
+
     static badRequest(message, errors = null) {
         return new ApiError(httpStatus.BAD_REQUEST, message, errors);
     }
