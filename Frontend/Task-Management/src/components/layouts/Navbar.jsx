@@ -9,6 +9,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import uploadImage from '../../utils/uploadImage';
 import Avatar from '../Avatar';
+import { extractS3Key } from '../../utils/helper';
 
 const Navbar = ({ activeMenu }) => {
     const [openSideMenu, setOpenSideMenu] = useState(false);
@@ -46,13 +47,37 @@ const Navbar = ({ activeMenu }) => {
         setError('');
 
         try {
-            let imageUrl = user?.profilePicture;
+            const oldImageUrl = user?.profilePicture;
+            let imageUrl = oldImageUrl;
 
             if (removeProfilePicture) {
+                // User clicked remove — delete old image from S3 if it exists
                 imageUrl = '';
+                if (oldImageUrl) {
+                    const oldKey = extractS3Key(oldImageUrl);
+                    if (oldKey) {
+                        try {
+                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldKey));
+                        } catch {
+                            // non-blocking — profile update continues even if S3 delete fails
+                        }
+                    }
+                }
             } else if (profilePicture) {
+                // User selected a new image — upload it, then delete the old one
                 const uploadRes = await uploadImage(profilePicture);
-                imageUrl = uploadRes.url;
+                imageUrl = uploadRes.data?.url;
+
+                if (oldImageUrl) {
+                    const oldKey = extractS3Key(oldImageUrl);
+                    if (oldKey) {
+                        try {
+                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldKey));
+                        } catch {
+                            // non-blocking
+                        }
+                    }
+                }
             }
 
             const response = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {

@@ -11,6 +11,12 @@ export const API_PATHS = {
         REFRESH_TOKEN: "/api/auth/refresh-token", // Refresh token API endpoint
         GET_PROFILE: "/api/auth/profile", // Get user profile API endpoint
     },
+
+    IMAGE: {
+        UPLOAD_IMAGE: "/api/auth/upload-image",
+        GET_IMAGE: (key) => `/api/auth/image/${key}`,
+        DELETE_IMAGE: (key )=> `/api/auth/image/${key}`
+    },
     
     USERS: {
         GET_ALL_USERS: "/api/users", // Get all users API endpoint (Admin only)
@@ -41,5 +47,7 @@ export const API_PATHS = {
 
     IMAGE: {
         UPLOAD_IMAGE: "/api/auth/upload-image", // Upload image API endpoint
+        GET_IMAGE: (key) => `/api/auth/image/${key}`, // Get presigned URL for an S3 image
+        DELETE_IMAGE: (key) => `/api/auth/image/${key}`, // Delete an image from S3
     },
 };
