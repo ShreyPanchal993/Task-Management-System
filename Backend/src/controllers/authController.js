@@ -1,4 +1,5 @@
 import * as authService from "../services/authService.js";
+import * as s3storageService from "../services/s3storageService.js"
 import ApiSuccess from "../utils/ApiSuccess.js";
 import ApiError from "../utils/ApiError.js";
 import { clearAuthCookies, setAuthCookies } from "../utils/cookieOptions.js";
@@ -55,6 +56,53 @@ const loginUser = async (req, res) => {
         return res.status(apiError.statusCode).json(apiError);
     }
 };
+
+const uploadImage = async (req, res) => {
+    try {
+        if (!req.file) {
+            const apiError = ApiError.badRequest("No image uploaded");
+            return res.status(apiError.statusCode).json(apiError);
+        }
+
+        const { publicUrl } = await s3storageService.uploadImageToS3(req.file);
+
+        return ApiSuccess.ok(res, "Image uploaded successfully", { url: publicUrl });
+    } catch (error) {
+        const apiError = resolveApiError(error);
+        return res.status(apiError.statusCode).json(apiError);
+    }
+}
+
+const getImageUrl = async (req, res) => {
+    try{
+        const key = req.params.key
+        
+        const preSignedUrl = await s3storageService.getPreSignedUrl(key);
+
+        return ApiSuccess.ok(res, "Image fetched successfully", { url: preSignedUrl })
+    } catch (error) {
+        const apiError = resolveApiError(error)
+        return res.status(apiError.statusCode).json(apiError);
+    }
+}
+
+const deleteImage = async (req, res) => {
+    try{
+        const key = req.params.key
+
+        if (!key) {
+            const apiError = ApiError.badRequest("Image key is required");
+            return res.status(apiError.statusCode).json(apiError)
+        }
+
+        await s3storageService.deleteImageFromS3(key);
+
+        return ApiSuccess.ok(res, "Image deleted successfully", { deleted: true });
+    } catch (error) {
+        const apiError = resolveApiError(error)
+        return res.status(apiError.statusCode).json(apiError);
+    }
+}
 
 const getUserProfile = async (req, res) => {
     try{
@@ -129,4 +177,4 @@ const refreshToken = async (req, res) => {
     }
 };
 
-export { registerUser, loginUser, getUserProfile, updateUserProfile, logoutUser, refreshToken };
+export { registerUser, loginUser, uploadImage, getImageUrl, deleteImage, getUserProfile, updateUserProfile, logoutUser, refreshToken };
