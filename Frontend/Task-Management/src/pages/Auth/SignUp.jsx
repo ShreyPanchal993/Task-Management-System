@@ -81,7 +81,7 @@ const SignUp = () => {
         if (profilePicture) {
           try {
             const imageUploadRes = await uploadImage(profilePicture);
-            uploadedImageUrl = imageUploadRes.url;
+            uploadedImageUrl = imageUploadRes.data?.url;
 
             const profileUpdateResponse = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
               name: fullName,
