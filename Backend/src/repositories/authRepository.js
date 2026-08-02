@@ -49,7 +49,10 @@ const loginUser = async (email, password) => {
 };
 
 const getUserProfile = async (userId) => {
-    const user = await User.findById(userId).select("-password").lean();
+    // A profile is a client-facing DTO, not a raw MongoDB document.
+    const user = await User.findById(userId)
+        .select("name email profilePicture role -_id")
+        .lean();
 
     if (!user) {
         throw ApiError.notFound("User not found");
@@ -62,7 +65,9 @@ const updateUserProfileById = async (userId, updateData) => {
     const user = await User.findByIdAndUpdate(userId, updateData, {
         new: true,
         runValidators: true,
-    }).select("-password").lean();
+    })
+        .select("name email profilePicture role -_id")
+        .lean();
 
     if (!user) {
         throw ApiError.notFound("User not found");

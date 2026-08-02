@@ -47,43 +47,37 @@ const Navbar = ({ activeMenu }) => {
         setError('');
 
         try {
-            const oldImageUrl = user?.profilePicture;
-            let imageUrl = oldImageUrl;
+            const oldImageKey = extractS3Key(user?.profilePicture);
+            let imageKey = oldImageKey || '';
 
             if (removeProfilePicture) {
                 // User clicked remove — delete old image from S3 if it exists
-                imageUrl = '';
-                if (oldImageUrl) {
-                    const oldKey = extractS3Key(oldImageUrl);
-                    if (oldKey) {
+                imageKey = '';
+                if (oldImageKey) {
                         try {
-                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldKey));
+                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
                         } catch {
                             // non-blocking — profile update continues even if S3 delete fails
                         }
-                    }
                 }
             } else if (profilePicture) {
                 // User selected a new image — upload it, then delete the old one
                 const uploadRes = await uploadImage(profilePicture);
-                imageUrl = uploadRes.data?.url;
+                imageKey = uploadRes.data?.key;
 
-                if (oldImageUrl) {
-                    const oldKey = extractS3Key(oldImageUrl);
-                    if (oldKey) {
+                if (oldImageKey) {
                         try {
-                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldKey));
+                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
                         } catch {
                             // non-blocking
                         }
-                    }
                 }
             }
 
             const response = await axiosInstance.patch(API_PATHS.AUTH.GET_PROFILE, {
                 name,
                 email,
-                profilePicture: imageUrl,
+                profilePicture: imageKey,
             });
 
             updateUser(response.data.data);
