@@ -11,6 +11,10 @@ const resolveApiError = (error) => (
         : ApiError.internal(error.message)
 );
 
+const getProfilePictureKey = (filename) => (
+    filename ? `profile-pictures/${filename}` : null
+);
+
 const registerUser = async (req, res) => {
     try{
         const { name, email, password, profilePicture } = req.body;
@@ -64,9 +68,9 @@ const uploadImage = async (req, res) => {
             return res.status(apiError.statusCode).json(apiError);
         }
 
-        const { publicUrl } = await s3storageService.uploadImageToS3(req.file);
+        const { key } = await s3storageService.uploadImageToS3(req.file);
 
-        return ApiSuccess.ok(res, "Image uploaded successfully", { url: publicUrl });
+        return ApiSuccess.ok(res, "Image uploaded successfully", { key });
     } catch (error) {
         const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
@@ -75,8 +79,13 @@ const uploadImage = async (req, res) => {
 
 const getImageUrl = async (req, res) => {
     try{
-        const key = req.params.key
-        
+        const key = getProfilePictureKey(req.params.filename);
+
+        if (!key) {
+            const apiError = ApiError.badRequest("Image filename is required");
+            return res.status(apiError.statusCode).json(apiError);
+        }
+
         const preSignedUrl = await s3storageService.getPreSignedUrl(key);
 
         return ApiSuccess.ok(res, "Image fetched successfully", { url: preSignedUrl })
@@ -88,10 +97,10 @@ const getImageUrl = async (req, res) => {
 
 const deleteImage = async (req, res) => {
     try{
-        const key = req.params.key
+        const key = getProfilePictureKey(req.params.filename);
 
         if (!key) {
-            const apiError = ApiError.badRequest("Image key is required");
+            const apiError = ApiError.badRequest("Image filename is required");
             return res.status(apiError.statusCode).json(apiError)
         }
 

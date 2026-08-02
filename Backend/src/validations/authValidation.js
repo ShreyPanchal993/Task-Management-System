@@ -1,11 +1,16 @@
 import Joi from "joi";
 
+const profilePictureSchema = Joi.alternatives().try(
+    Joi.string().trim().uri({ scheme: ["http", "https"] }),
+    Joi.string().trim().pattern(/^profile-pictures\/[A-Za-z0-9][A-Za-z0-9._-]*$/)
+).allow("");
+
 export const registerSchema = {
     body: Joi.object({
         name: Joi.string().trim().min(2).max(100).required(),
         email: Joi.string().trim().email().max(255).required(),
         password: Joi.string().min(8).max(128).required(),
-        profilePicture: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("").optional(),
+        profilePicture: profilePictureSchema.optional(),
     }),
 };
 
@@ -20,7 +25,7 @@ export const updateProfileSchema = {
     body: Joi.object({
         name: Joi.string().trim().min(2).max(100).optional(),
         email: Joi.string().trim().email().max(255).optional(),
-        profilePicture: Joi.string().trim().uri({ scheme: ["http", "https"] }).allow("").optional(),
+        profilePicture: profilePictureSchema.optional(),
         currentPassword: Joi.string().min(8).max(128).when("newPassword", {
             is: Joi.exist(),
             then: Joi.required(),
