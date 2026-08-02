@@ -1,4 +1,5 @@
 import httpStatus from "http-status";
+import { sanitizeResponseData } from "./responseSanitizer.js";
 
 class ApiSuccess {
     constructor(statusCode, message, data = null) {
@@ -6,7 +7,7 @@ class ApiSuccess {
         this.message = message;
         this.success = true;
         if (data) {
-            this.data = data;
+            this.data = sanitizeResponseData(data);
         }
     }
 
