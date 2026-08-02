@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import resolveImageUrl from "../utils/resolveImageUrl";
+import usePresignedImageUrl from "../utils/usePresignedImageUrl";
 
 const getInitials = (name = "") => {
     const parts = name
@@ -24,7 +24,7 @@ const Avatar = ({
 }) => {
     const [hasImageError, setHasImageError] = useState(false);
     const initials = useMemo(() => getInitials(name), [name]);
-    const resolvedSrc = useMemo(() => resolveImageUrl(src), [src]);
+    const resolvedSrc = usePresignedImageUrl(src);
     const shouldShowImage = Boolean(resolvedSrc) && !hasImageError;
 
     useEffect(() => {

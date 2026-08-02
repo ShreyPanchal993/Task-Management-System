@@ -16,8 +16,18 @@ export const addThousandSeparator = (num) => {
 
 export const extractS3Key = (url) => {
     if (!url) return null;
+
+    if (typeof url === "string" && url.startsWith("profile-pictures/")) {
+        return url;
+    }
+
     try {
-        return new URL(url).pathname.slice(1);
+        const parsedUrl = new URL(url);
+        const isS3Url = parsedUrl.hostname.endsWith(".amazonaws.com") && parsedUrl.hostname.includes(".s3");
+
+        return isS3Url && parsedUrl.pathname.startsWith("/profile-pictures/")
+            ? decodeURIComponent(parsedUrl.pathname.slice(1))
+            : null;
     } catch {
         return null;
     }

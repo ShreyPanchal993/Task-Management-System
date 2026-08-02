@@ -25,11 +25,6 @@ const buildS3FilePath = (file) => {
     return `profile-pictures/${Date.now()}-${random}${extension}`;
 };
 
-const getObjectUrl = (key) => {
-    const { bucketName, region } = getS3Config();
-    return `https://${bucketName}.s3.${region}.amazonaws.com/${key}`;
-};
-
 const uploadImageToS3 = async (file) => {
     if (!file?.buffer) {
         throw ApiError.badRequest("No image file provided");
@@ -53,7 +48,6 @@ const uploadImageToS3 = async (file) => {
 
     return {
         key,
-        publicUrl: getObjectUrl(key),
     };
 };
 
@@ -67,7 +61,7 @@ const getPreSignedUrl = async (key) => {
 
     let url;
     try{
-        url = await getSignedUrl(getS3Client(), command, { expiresIn: 3600 });
+        url = await getSignedUrl(getS3Client(), command, { expiresIn: 900 });
     } catch (err) {
         throw ApiError.internal(`S3 fetch failed: ${err.message}`);
     }
@@ -92,4 +86,4 @@ const deleteImageFromS3 = async (key) => {
     return {deleted: true, key};
 };
 
-export {getObjectUrl, uploadImageToS3, getPreSignedUrl, deleteImageFromS3}
+export { uploadImageToS3, getPreSignedUrl, deleteImageFromS3 };

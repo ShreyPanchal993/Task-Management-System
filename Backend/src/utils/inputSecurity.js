@@ -1,4 +1,5 @@
 const HTML_TAG_PATTERN = /<[^>]+>/;
+const PROFILE_PICTURE_KEY_PATTERN = /^profile-pictures\/[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 const assertNoHtml = (value, fieldName) => {
     if (typeof value === "string" && HTML_TAG_PATTERN.test(value)) {
@@ -45,6 +46,18 @@ const normalizeUrl = (value, fieldName) => {
     return parsedUrl.toString();
 };
 
+const normalizeProfilePicture = (value) => {
+    if (!value) {
+        return "";
+    }
+
+    const trimmedValue = typeof value === "string" ? value.trim() : "";
+
+    return PROFILE_PICTURE_KEY_PATTERN.test(trimmedValue)
+        ? trimmedValue
+        : normalizeUrl(trimmedValue, "Profile picture");
+};
+
 export const normalizeUserInput = ({ name, email, profilePicture }) => {
     assertNoHtml(name, "Name");
     assertNoHtml(email, "Email");
@@ -52,7 +65,7 @@ export const normalizeUserInput = ({ name, email, profilePicture }) => {
     return {
         name: normalizeString(name),
         email: normalizeEmail(email),
-        profilePicture: profilePicture ? normalizeUrl(profilePicture, "Profile picture") : "",
+        profilePicture: normalizeProfilePicture(profilePicture),
     };
 };
 
@@ -71,9 +84,7 @@ export const normalizeProfileUpdateInput = ({ name, email, profilePicture }) => 
     }
 
     if (typeof profilePicture !== "undefined") {
-        normalizedData.profilePicture = profilePicture
-            ? normalizeUrl(profilePicture, "Profile picture")
-            : "";
+        normalizedData.profilePicture = normalizeProfilePicture(profilePicture);
     }
 
     return normalizedData;

@@ -34,14 +34,9 @@ router.post(
     authController.uploadImage
 );
 
-router.get("/image/:folder/:filename", protect, (req, res, next) => {
-    req.params.key = `${req.params.folder}/${req.params.filename}`;
-    next();
-}, authController.getImageUrl);
-
-router.delete("/image/:folder/:filename", protect, requireCsrfProtection, (req, res, next) => {
-    req.params.key = `${req.params.folder}/${req.params.filename}`;
-    next();
-}, authController.deleteImage);
+router
+    .route("/image/profile-pictures/:filename")
+    .get(protect, authController.getImageUrl)
+    .delete(protect, requireCsrfProtection, authController.deleteImage);
 
 export default router;
