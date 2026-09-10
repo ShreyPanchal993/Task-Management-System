@@ -90,6 +90,16 @@ app.use((req, res, next) => {
     next();
 });
 
+// Health check endpoint (for external uptime monitors and Render health checks)
+app.get(["/api/health", "/health"], (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Server is healthy",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+    });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
