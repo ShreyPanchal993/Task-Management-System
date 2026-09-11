@@ -4,6 +4,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import { LuFileSpreadsheet, LuUsers } from 'react-icons/lu';
 import UserCard from '../../components/Cards/UserCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { UserContext } from '../../context/userContext';
 
@@ -11,13 +12,17 @@ const ManageUsers = () => {
   const { user: currentUser, updateUser } = useContext(UserContext);
   const [allUsers, setAllUsers] = useState([]);
   const [roleUpdateId, setRoleUpdateId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getAllUsers = async () => {
     try {
+      setLoading(true);
       const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
       setAllUsers(response.data?.data || []);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load users.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,7 +97,9 @@ const ManageUsers = () => {
           </button>
         </div>
 
-        {allUsers.length === 0 ? (
+        {loading ? (
+          <LoadingSpinner className="py-24" />
+        ) : allUsers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mb-4"

@@ -165,8 +165,8 @@ const Dashboard = () => {
       </div>
 
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 gap-6 my-4 md:my-6">
-        <div className="md:col-span-2 animate-slide-up stagger-4">
+      <div className="w-full my-4 md:my-6">
+        <div className="animate-slide-up stagger-4">
           <div className="card">
             <div className="flex items-center justify-between">
               <h5 className="text-lg font-semibold text-slate-900">Recent Tasks</h5>

@@ -84,8 +84,16 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .card {
-    @apply p-6 rounded-[28px] border;
+    @apply p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border;
     background: linear-gradient(180deg, var(--surface-1) 0%, rgba(255, 255, 255, 0.82) 100%);
     border-color: var(--border-soft);
     box-shadow: var(--shadow-soft);
@@ -106,7 +114,7 @@
 }
 
 .form-card {
-    @apply p-6 rounded-[28px] border;
+    @apply p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border;
     background: linear-gradient(180deg, rgba(255, 254, 251, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%);
     border-color: var(--border-soft);
     box-shadow: var(--shadow-soft);
