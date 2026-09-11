@@ -1,4 +1,5 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import SideMenu from './SideMenu';
 import { UserContext } from '../../context/userContext';
@@ -17,7 +18,8 @@ const Navbar = ({ activeMenu }) => {
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [showPasswordSection, setShowPasswordSection] = useState(false);
     const { user, updateUser } = useContext(UserContext);
-    
+    const location = useLocation();
+
     const [name, setName] = useState(user?.name || '');
     const [email, setEmail] = useState(user?.email || '');
     const [currentPassword, setCurrentPassword] = useState('');
@@ -27,6 +29,32 @@ const Navbar = ({ activeMenu }) => {
     const [removeProfilePicture, setRemoveProfilePicture] = useState(false);
     const [error, setError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    // Close mobile drawer on route change
+    useEffect(() => {
+        setOpenSideMenu(false);
+    }, [location.pathname]);
+
+    // Close mobile drawer on Escape key and lock background scroll
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                setOpenSideMenu(false);
+            }
+        };
+
+        if (openSideMenu) {
+            document.body.style.overflow = 'hidden';
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openSideMenu]);
 
     const openProfileModal = () => {
         setName(user?.name || '');
@@ -54,11 +82,11 @@ const Navbar = ({ activeMenu }) => {
                 // User clicked remove — delete old image from S3 if it exists
                 imageKey = '';
                 if (oldImageKey) {
-                        try {
-                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
-                        } catch {
-                            // non-blocking — profile update continues even if S3 delete fails
-                        }
+                    try {
+                        await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
+                    } catch {
+                        // non-blocking — profile update continues even if S3 delete fails
+                    }
                 }
             } else if (profilePicture) {
                 // User selected a new image — upload it, then delete the old one
@@ -66,11 +94,11 @@ const Navbar = ({ activeMenu }) => {
                 imageKey = uploadRes.data?.key;
 
                 if (oldImageKey) {
-                        try {
-                            await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
-                        } catch {
-                            // non-blocking
-                        }
+                    try {
+                        await axiosInstance.delete(API_PATHS.IMAGE.DELETE_IMAGE(oldImageKey));
+                    } catch {
+                        // non-blocking
+                    }
                 }
             }
 
@@ -125,17 +153,18 @@ const Navbar = ({ activeMenu }) => {
 
     return (
         <>
-            <div
-                className="flex items-center justify-between gap-5 border-b px-4 py-4 md:px-7 sticky top-0 z-30 backdrop-blur-xl"
+            <header
+                className="flex items-center justify-between gap-3 border-b px-4 py-3.5 md:px-7 sticky top-0 z-30 backdrop-blur-xl"
                 style={{
-                    background: 'rgba(248, 244, 236, 0.72)',
+                    background: 'rgba(248, 244, 236, 0.82)',
                     borderColor: 'rgba(148, 163, 184, 0.14)',
                 }}
             >
-                <div className="flex items-center gap-5">
+                <div className="flex items-center gap-3 md:gap-5">
                     <button
-                        className="block lg:hidden text-slate-700"
+                        className="flex lg:hidden text-slate-700 p-1.5 -ml-1 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
                         onClick={() => setOpenSideMenu(!openSideMenu)}
+                        aria-label={openSideMenu ? "Close navigation menu" : "Open navigation menu"}
                     >
                         {openSideMenu ? <HiOutlineX className="text-2xl" /> : <HiOutlineMenu className="text-2xl" />}
                     </button>
@@ -154,10 +183,10 @@ const Navbar = ({ activeMenu }) => {
 
                     <button
                         onClick={openProfileModal}
-                        className="w-11 h-11 rounded-full overflow-hidden border-2 shadow-lg hover:-translate-y-0.5"
+                        className="w-10 h-10 md:w-11 md:h-11 rounded-full overflow-hidden border-2 shadow-md hover:-translate-y-0.5 transition-transform cursor-pointer"
                         style={{
                             borderColor: 'rgba(40, 80, 217, 0.24)',
-                            boxShadow: '0 12px 24px rgba(15, 23, 42, 0.12)',
+                            boxShadow: '0 8px 18px rgba(15, 23, 42, 0.1)',
                         }}
                     >
                         <Avatar
@@ -169,17 +198,59 @@ const Navbar = ({ activeMenu }) => {
                         />
                     </button>
                 </div>
+            </header>
 
-                {openSideMenu && (
-                    <div className="fixed top-[77px] left-4 rounded-[28px] overflow-hidden lg:hidden">
-                        <SideMenu
-                            activeMenu={activeMenu}
-                            isCollapsed={isCollapsed}
-                            setIsCollapsed={setIsCollapsed}
-                        />
+            {/* Mobile Drawer Backdrop */}
+            <div
+                className={`fixed inset-0 bg-slate-950/45 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
+                    openSideMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                }`}
+                onClick={() => setOpenSideMenu(false)}
+                aria-hidden="true"
+            />
+
+            {/* Mobile Off-canvas Slide Drawer */}
+            <aside
+                className={`fixed top-0 bottom-0 left-0 z-50 w-72 max-w-[85vw] flex flex-col lg:hidden transition-transform duration-300 ease-out shadow-2xl ${
+                    openSideMenu ? 'translate-x-0' : '-translate-x-full'
+                }`}
+                style={{
+                    background: 'linear-gradient(180deg, #fffdf8 0%, #fbf8f2 100%)',
+                    borderRight: '1px solid rgba(148, 163, 184, 0.18)',
+                    boxShadow: '0 25px 60px rgba(15, 23, 42, 0.22)',
+                }}
+                aria-label="Mobile Navigation"
+            >
+                {/* Mobile Drawer Header */}
+                <div
+                    className="flex items-center justify-between px-5 py-4 border-b shrink-0"
+                    style={{ borderColor: 'rgba(148, 163, 184, 0.14)' }}
+                >
+                    <div>
+                        <p className="soft-label">Workspace</p>
+                        <h2 className="text-base font-semibold tracking-tight text-slate-900">Trackora</h2>
                     </div>
-                )}
-            </div>
+
+                    <button
+                        onClick={() => setOpenSideMenu(false)}
+                        className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-900 transition-colors cursor-pointer"
+                        aria-label="Close menu"
+                    >
+                        <HiOutlineX className="text-xl" />
+                    </button>
+                </div>
+
+                {/* Mobile Drawer Menu Content */}
+                <div className="flex-1 overflow-y-auto">
+                    <SideMenu
+                        activeMenu={activeMenu}
+                        isCollapsed={false}
+                        setIsCollapsed={setIsCollapsed}
+                        isMobile={true}
+                        onClose={() => setOpenSideMenu(false)}
+                    />
+                </div>
+            </aside>
 
             <Modal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} title="Edit Profile">
                 <form onSubmit={handleUpdateProfile}>
@@ -218,7 +289,7 @@ const Navbar = ({ activeMenu }) => {
                                 setShowPasswordSection(!showPasswordSection);
                                 setPasswordError('');
                             }}
-                            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border"
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border cursor-pointer"
                             style={{
                                 background: 'rgba(248, 244, 236, 0.72)',
                                 borderColor: 'rgba(148, 163, 184, 0.14)',
@@ -308,6 +379,6 @@ const Navbar = ({ activeMenu }) => {
             </Modal>
         </>
     );
-}
+};
 
-export default Navbar
+export default Navbar;

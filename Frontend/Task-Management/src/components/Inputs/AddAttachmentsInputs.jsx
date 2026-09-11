@@ -23,15 +23,15 @@ const AddAttachmentsInputs = ({ attachments, setAttachments }) => {
             {attachments.map((item, index) => (
                 <div 
                     key={index} 
-                    className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2"
+                    className="flex items-center justify-between gap-3 bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2"
                 >
-                    <div className="flex-1 flex items-center gap-3">
-                        <LuPaperclip className="text-gray-400" />
-                        <p className="text-xs text-black">{item}</p>
+                    <div className="flex-1 min-w-0 flex items-center gap-2.5">
+                        <LuPaperclip className="text-gray-400 shrink-0" />
+                        <p className="text-xs text-black truncate" title={item}>{item}</p>
                     </div>
 
                     <button 
-                        className="cursor-pointer"
+                        className="cursor-pointer shrink-0"
                         onClick={() => 
                             handleDeleteOption(index)
                         }
@@ -41,7 +41,7 @@ const AddAttachmentsInputs = ({ attachments, setAttachments }) => {
                 </div>
             ))}
 
-            <div className="flex items-center gap-5 mt-4">
+            <div className="flex items-center gap-3 sm:gap-5 mt-4">
                 <div className="flex-1 flex items-center gap-3 border border-gray-100 rounded-md px-3">
                     <LuPaperclip className="text-gray-400" />
 

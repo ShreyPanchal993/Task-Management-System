@@ -14,8 +14,8 @@ const CustomPieChart = ({ data, colors }) => {
                     nameKey="status"
                     cx="50%"
                     cy="50%"
-                    outerRadius={130}
-                    innerRadius={100}
+                    outerRadius={115}
+                    innerRadius={82}
                     labelLine={false}
                     animationBegin={200}
                     animationDuration={1000}

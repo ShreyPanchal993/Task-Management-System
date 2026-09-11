@@ -6,12 +6,14 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import moment from 'moment';
 import AvatarGroup from '../../components/AvatarGroup';
 import { LuSquareArrowOutUpRight, LuX } from 'react-icons/lu';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const getStatusTagColor = (status) => {
     switch (status) {
@@ -29,6 +31,7 @@ const ViewTaskDetails = () => {
   // Get Task info by ID
   const getTaskDetailsByID = async () => {
     try{
+      setLoading(true);
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_TASK_BY_ID(id));
 
       if (response.data?.data) {
@@ -37,12 +40,14 @@ const ViewTaskDetails = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load task details.");
+    } finally {
+      setLoading(false);
     }
   };
 
   // Handle Todo check
   const updateTodoChecklist = async (index) => {
-    const todoChecklist = [...task?.todoChecklist];
+    const todoChecklist = [...(task?.todoChecklist || [])];
     const taskId = id;
 
     if (todoChecklist && todoChecklist[index]){
@@ -84,26 +89,28 @@ const ViewTaskDetails = () => {
   return (
     <DashboardLayout activeMenu="My Tasks">
       <div className="mt-5">
-        {task && (
-          <div className="grid grid-cols-1 md:grid-cols-4 mt-4">
-            <div className="form-card col-span-3">
+        {loading ? (
+          <LoadingSpinner className="py-24" />
+        ) : task ? (
+          <div className="w-full max-w-4xl mt-4">
+            <div className="form-card w-full">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="soft-label">Task Detail</p>
-                  <h2 className="text-sm md:text-xl font-semibold mt-2">{task?.title}</h2>
+                  <h2 className="text-base sm:text-lg md:text-xl font-semibold mt-1 sm:mt-2">{task?.title}</h2>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className={`text-[11px] md:text-[13px] font-semibold ${getStatusTagColor(
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`text-[10px] sm:text-[11px] md:text-[13px] font-semibold ${getStatusTagColor(
                     task?.status
-                    )} px-4 py-1 rounded-full`}
+                    )} px-3 sm:px-4 py-1 rounded-full`}
                   >
                     {task?.status}
                   </div>
                   
                   <button 
                     onClick={() => navigate(-1)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white transition-colors cursor-pointer"
                   >
                     <LuX className="text-xl text-gray-600" />
                   </button>
@@ -114,11 +121,11 @@ const ViewTaskDetails = () => {
                 <InfoBox label="Description" value={task?.description} />
               </div>
 
-              <div className="grid grid-cols-12 gap-4 mt-4">
-                <div className="col-span-6 md:col-span-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                <div>
                   <InfoBox label="Priority" value={task?.priority}/>
                 </div>
-                <div className="col-span-6 md:col-span-4">
+                <div>
                   <InfoBox 
                     label="Due Date"
                     value={
@@ -128,15 +135,16 @@ const ViewTaskDetails = () => {
                     }
                   />
                 </div>
-                <div className="col-span-6 md:col-span-4">
+                <div>
                   <label className="text-xs font-medium text-slate-500">Assigned To</label>
-
-                  <AvatarGroup 
-                    avatars={
-                      task?.assignedTo?.map((item) => item.profilePicture) || []
-                    }
-                    maxVisible={5}
-                  />
+                  <div className="mt-1">
+                    <AvatarGroup 
+                      avatars={
+                        task?.assignedTo?.map((item) => item.profilePicture) || []
+                      }
+                      maxVisible={5}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -169,7 +177,7 @@ const ViewTaskDetails = () => {
               )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </DashboardLayout>
   )
