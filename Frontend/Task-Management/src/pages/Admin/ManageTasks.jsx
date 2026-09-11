@@ -6,6 +6,7 @@ import { API_PATHS } from '../../utils/apiPaths';
 import { LuFileSpreadsheet, LuSearch, LuSquarePlus, LuX } from 'react-icons/lu';
 import TaskStatusTabs from '../../components/TaskStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 const ManageTasks = () => {
@@ -13,11 +14,13 @@ const ManageTasks = () => {
   const [tabs, setTabs] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
   const getAllTasks = async () => {
     try {
+      setLoading(true);
       const params = filterStatus === "All" ? {} : { status: filterStatus };
 
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, { params });
@@ -35,6 +38,8 @@ const ManageTasks = () => {
       setTabs(statusArray);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load tasks.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,7 +61,7 @@ const ManageTasks = () => {
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
-    } catch (error) {
+    } catch {
       toast.error("Failed to download task report. Please try again.");
     }
   };
@@ -134,7 +139,9 @@ const ManageTasks = () => {
         </div>
 
         {/* Zero tasks at all — show CTA */}
-        {totalTaskCount === 0 ? (
+        {loading ? (
+          <LoadingSpinner className="py-24" />
+        ) : totalTaskCount === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mb-4"

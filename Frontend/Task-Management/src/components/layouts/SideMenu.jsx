@@ -7,13 +7,17 @@ import { API_PATHS } from '../../utils/apiPaths';
 import { HiChevronLeft } from 'react-icons/hi';
 import Avatar from '../Avatar';
 
-const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
+const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed, isMobile = false, onClose }) => {
     const { user, clearUser } = useContext(UserContext);
     const [sideMenuData, setSideMenuData] = useState([]);
 
     const navigate = useNavigate();
 
     const handleClick = (route) => {
+        if (onClose) {
+            onClose();
+        }
+
         if (route === "logout") {
             handleLogout();
             return;
@@ -39,33 +43,37 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
 
     return (
         <div
-            className={`${isCollapsed ? 'w-20' : 'w-72'} h-[calc(100vh-77px)] rounded-[28px] border sticky top-[85px] z-20 transition-all duration-300 ml-4`}
-            style={{
+            className={isMobile
+                ? "w-full flex-1 flex flex-col justify-between overflow-y-auto"
+                : `${isCollapsed ? 'w-20' : 'w-72'} h-[calc(100vh-77px)] rounded-[28px] border sticky top-[85px] z-20 transition-all duration-300 ml-4`}
+            style={isMobile ? undefined : {
                 background: 'linear-gradient(180deg, rgba(255, 253, 248, 0.88) 0%, rgba(255, 255, 255, 0.72) 100%)',
                 borderColor: 'rgba(148, 163, 184, 0.14)',
                 boxShadow: '0 18px 40px rgba(15, 23, 42, 0.08)',
             }}
         >
-            <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-5 w-7 h-7 text-white rounded-full flex items-center justify-center z-30"
-                style={{ background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)' }}
-            >
-                <HiChevronLeft className={`text-sm transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
-            </button>
+            {!isMobile && (
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="absolute -right-3 top-5 w-7 h-7 text-white rounded-full flex items-center justify-center z-30"
+                    style={{ background: 'linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)' }}
+                >
+                    <HiChevronLeft className={`text-sm transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+                </button>
+            )}
 
-            <div className="flex flex-col items-center justify-center mb-7 pt-7 px-4">
+            <div className={`flex flex-col items-center justify-center ${isMobile ? 'mb-5 pt-4' : 'mb-7 pt-7'} px-4`}>
                 <div className="relative">
                     <Avatar
                         src={user?.profilePicture}
                         name={user?.name}
                         alt="Profile Image"
-                        className={`${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} rounded-full object-cover transition-all duration-300 ring-4 ring-white/80`}
-                        fallbackClassName={`${isCollapsed ? 'w-12 h-12 text-sm' : 'w-20 h-20 text-xl'} flex items-center justify-center rounded-full transition-all duration-300 ring-4 ring-white/80 bg-slate-300 font-semibold text-slate-700`}
+                        className={`${!isMobile && isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} rounded-full object-cover transition-all duration-300 ring-4 ring-white/80`}
+                        fallbackClassName={`${!isMobile && isCollapsed ? 'w-12 h-12 text-sm' : 'w-20 h-20 text-xl'} flex items-center justify-center rounded-full transition-all duration-300 ring-4 ring-white/80 bg-slate-300 font-semibold text-slate-700`}
                     />
                 </div>
 
-                {!isCollapsed && (
+                {(!isCollapsed || isMobile) && (
                     <>
                         {(user?.role === "admin" || user?.role === "super_admin") && (
                             <div
@@ -76,20 +84,20 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
                             </div>
                         )}
 
-                        <h5 className="text-slate-950 font-semibold leading-6 mt-4">
+                        <h5 className="text-slate-950 font-semibold leading-6 mt-3 text-center">
                             {user?.name || ""}
                         </h5>
 
-                        <p className="text-[12px] text-slate-500 text-center">{user?.email || ""}</p>
+                        <p className="text-[12px] text-slate-500 text-center break-all px-2">{user?.email || ""}</p>
                     </>
                 )}
             </div>
 
-            <div className="px-3">
+            <div className="px-3 pb-4">
                 {sideMenuData.map((item, index) => (
                     <button
                         key={`menu_${index}`}
-                        className={`w-full flex items-center rounded-2xl ${isCollapsed ? 'justify-center' : 'gap-4'} text-[15px] py-3 ${isCollapsed ? 'px-0' : 'px-4'} mb-2.5 cursor-pointer transition-all duration-300 ${
+                        className={`w-full flex items-center rounded-2xl ${!isMobile && isCollapsed ? 'justify-center' : 'gap-4'} text-[15px] py-3 ${!isMobile && isCollapsed ? 'px-0' : 'px-4'} mb-2.5 cursor-pointer transition-all duration-300 ${
                             activeMenu == item.label
                                 ? 'text-white shadow-lg'
                                 : 'text-slate-600 hover:bg-white/70 hover:text-slate-900'
@@ -101,10 +109,10 @@ const SideMenu = ({ activeMenu, isCollapsed, setIsCollapsed }) => {
                             }
                             : undefined}
                         onClick={() => handleClick(item.path)}
-                        title={isCollapsed ? item.label : ''}
+                        title={!isMobile && isCollapsed ? item.label : ''}
                     >
-                        <item.icon className="text-xl" />
-                        {!isCollapsed && item.label}
+                        <item.icon className="text-xl shrink-0" />
+                        {(!isCollapsed || isMobile) && <span>{item.label}</span>}
                     </button>
                 ))}
             </div>

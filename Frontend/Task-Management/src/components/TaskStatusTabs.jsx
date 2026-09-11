@@ -35,14 +35,14 @@ const TaskStatusTabs = ({ tabs, activeTab, setActiveTab }) => {
     }, [activeTab, tabs]);
 
     return (
-        <div className="my-2">
+        <div className="my-2 max-w-full">
             <div
                 ref={containerRef}
-                className="relative flex flex-wrap gap-2 rounded-full border p-1.5"
+                className="relative flex items-center overflow-x-auto no-scrollbar gap-1 sm:gap-2 rounded-full border p-1 sm:p-1.5"
                 style={{ background: "rgba(255, 255, 255, 0.5)", borderColor: "var(--border-soft)" }}
             >
                 <div
-                    className="absolute left-1.5 top-1.5 rounded-full shadow-md transition-all duration-300 ease-out"
+                    className="absolute left-1 sm:left-1.5 top-1 sm:top-1.5 rounded-full shadow-md transition-all duration-300 ease-out pointer-events-none"
                     style={{
                         ...highlightStyle,
                         background: "linear-gradient(135deg, #2850d9 0%, #1b36a9 100%)",
@@ -58,7 +58,7 @@ const TaskStatusTabs = ({ tabs, activeTab, setActiveTab }) => {
                             ref={(element) => {
                                 tabRefs.current[tab.label] = element;
                             }}
-                            className={`relative z-10 px-3 md:px-4 py-2 text-sm font-medium rounded-full transition-colors duration-300 ${
+                            className={`relative z-10 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-colors duration-300 shrink-0 ${
                                 isActive
                                     ? 'text-white'
                                     : 'text-gray-500 hover:text-gray-700'
