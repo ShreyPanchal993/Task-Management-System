@@ -5,6 +5,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import TaskStatusTabs from '../../components/TaskStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 import { LuClipboardList } from 'react-icons/lu';
 
@@ -12,11 +13,13 @@ const MyTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
   const [tabs, setTabs] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
   const getAllTasks = async () => {
     try {
+      setLoading(true);
       const params = filterStatus === "All" ? {} : { status: filterStatus };
 
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, { params });
@@ -34,6 +37,8 @@ const MyTasks = () => {
       setTabs(statusArray);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to load tasks.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -66,7 +71,9 @@ const MyTasks = () => {
           )}
         </div>
 
-        {totalTaskCount === 0 ? (
+        {loading ? (
+          <LoadingSpinner className="py-24" />
+        ) : totalTaskCount === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div
               className="w-16 h-16 rounded-full flex items-center justify-center mb-4"

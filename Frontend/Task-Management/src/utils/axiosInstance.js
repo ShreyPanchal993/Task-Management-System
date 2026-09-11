@@ -9,7 +9,7 @@ const isPublicPath = (pathname = "") => PUBLIC_PATHS.has(pathname);
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    timeout: 10000,
+    timeout: 45000,
     headers: {
         "Content-Type": "application/json",
         Accept: "application/json",

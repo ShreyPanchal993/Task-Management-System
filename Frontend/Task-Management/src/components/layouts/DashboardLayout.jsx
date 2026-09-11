@@ -13,11 +13,11 @@ const DashboardLayout = ({children, activeMenu}) => {
 
             {user && (
                 <div className="flex">
-                    <div className="max-[1080px]:hidden">
+                    <div className="hidden lg:block">
                         <SideMenu activeMenu={activeMenu} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
                     </div>
 
-                    <div className="grow px-4 pb-8 pt-2 md:px-6 lg:px-8">{children}</div>
+                    <div className="grow min-w-0 px-3 sm:px-4 pb-8 pt-2 md:px-6 lg:px-8">{children}</div>
                 </div>
             )}
             
