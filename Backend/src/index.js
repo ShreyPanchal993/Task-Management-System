@@ -11,6 +11,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import startKeepAliveJob from "./jobs/keepAlive.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -126,4 +127,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => logger.info(`Server running on PORT: ${PORT}`));
+app.listen(PORT, () => {
+    logger.info(`Server running on PORT: ${PORT}`);
+    startKeepAliveJob();
+});

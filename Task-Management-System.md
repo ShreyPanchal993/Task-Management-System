@@ -144,6 +144,9 @@ The frontend will run on `http://localhost:5173`
 
 ## API Endpoints
 
+### Health Check
+- `GET /api/health` or `GET /health` - Server health check & uptime status
+
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login

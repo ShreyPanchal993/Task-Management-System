@@ -1,8 +1,8 @@
 import React from 'react';
 
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ className = "min-h-[60vh]" }) => {
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className={`flex items-center justify-center ${className}`}>
       <div className="relative">
         <div className="w-16 h-16 border-4 border-blue-200 border-t-primary rounded-full animate-spin"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">

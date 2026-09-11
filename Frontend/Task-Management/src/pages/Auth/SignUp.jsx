@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext";
+import useServerStatus from "../../utils/useServerStatus.js";
 import uploadImage from "../../utils/uploadImage.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
@@ -33,6 +34,7 @@ const SignUp = () => {
 
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
+  useServerStatus(); // Silently pre-warms the backend + pre-fetches CSRF token
 
   const passwordStrength = getPasswordStrength(password);
 

@@ -1,9 +1,10 @@
-import React, { useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance.js";
 import { API_PATHS } from "../../utils/apiPaths.js";
 import { UserContext } from "../../context/userContext.jsx";
+import useServerStatus from "../../utils/useServerStatus.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
 
@@ -16,6 +17,7 @@ const Login = () => {
 
   const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
+  useServerStatus(); // Silently pre-warms the backend + pre-fetches CSRF token
 
   const handleLogin = async (e) => {
       e.preventDefault();
