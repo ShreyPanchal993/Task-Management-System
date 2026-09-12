@@ -22,48 +22,55 @@ import ViewTaskDetails from "./pages/User/ViewTaskDetails";
 
 import PrivateRoute from "./routes/PrivateRoute";
 import UserProvider, { UserContext } from "./context/userContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const App = () => {
-  return(
-    <UserProvider>
-      <div>
-        <Router>
-          <Routes>
-            <Route path="/" element={<LandingPage/>} />
-            <Route path="/login" element={<Login/>} />
-            <Route path="/signUp" element={<SignUp/>} />
-            <Route path="/app" element={<Root/>} />
+  return (
+    <ThemeProvider>
+      <UserProvider>
+        <div>
+          <Router>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signUp" element={<SignUp />} />
+              <Route path="/app" element={<Root />} />
 
-            {/* Admin Routes */}
-            <Route element={<PrivateRoute allowedRoles={["admin", "super_admin"]} />}>
-              <Route path="/admin/dashboard" element={<Dashboard/>} />
-              <Route path="/admin/tasks" element={<ManageTasks/>} />
-              <Route path="/admin/create-task" element={<CreateTask/>} />
-              <Route path="/admin/users" element={<ManageUsers/>} />
-            </Route>
+              {/* Admin Routes */}
+              <Route element={<PrivateRoute allowedRoles={["admin", "super_admin"]} />}>
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/tasks" element={<ManageTasks />} />
+                <Route path="/admin/create-task" element={<CreateTask />} />
+                <Route path="/admin/users" element={<ManageUsers />} />
+              </Route>
 
-            {/* User Routes */}
-            <Route element={<PrivateRoute allowedRoles={["member", "admin", "super_admin"]} />}>
-              <Route path="/user/dashboard" element={<UserDashboard/>} />
-              <Route path="/user/tasks" element={<MyTasks/>} />
-              <Route path="/user/task-details/:id" element={<ViewTaskDetails/>} />
-            </Route>
+              {/* User Routes */}
+              <Route element={<PrivateRoute allowedRoles={["member", "admin", "super_admin"]} />}>
+                <Route path="/user/dashboard" element={<UserDashboard />} />
+                <Route path="/user/tasks" element={<MyTasks />} />
+                <Route path="/user/task-details/:id" element={<ViewTaskDetails />} />
+              </Route>
 
-            {/* Default Route */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Router>
-      </div>
+              {/* Default Route */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Router>
+        </div>
 
-      <Toaster
-        toastOptions={{
-          className: "",
-          style: {
-            fontSize: "13px",
-          }
-        }}
-      />
-    </UserProvider>
+        <Toaster
+          toastOptions={{
+            className: "",
+            style: {
+              fontSize: "13px",
+              background: "var(--surface-1)",
+              color: "var(--text-strong)",
+              border: "1px solid var(--border-soft)",
+              backdropFilter: "blur(12px)",
+            }
+          }}
+        />
+      </UserProvider>
+    </ThemeProvider>
   )
 }
 

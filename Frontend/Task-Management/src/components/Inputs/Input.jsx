@@ -3,13 +3,13 @@ import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
 
 const Input = ({ value, onChange, placeholder, label, type }) => {
   const [showPassword, setShowPassword] = React.useState(false);
-  
+
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   }
-  return ( 
+  return (
     <div>
-      <label className="text-[13px] font-medium text-slate-700">{label}</label>
+      <label className="text-[13px] font-medium text-slate-700 dark:text-slate-300">{label}</label>
 
       <div className="input-box">
         <input
@@ -17,7 +17,7 @@ const Input = ({ value, onChange, placeholder, label, type }) => {
             type == "password" ? (showPassword ? "text" : "password") : type
           }
           placeholder={placeholder}
-          className="w-full bg-transparent outline-none placeholder:text-slate-400"
+          className="w-full bg-transparent outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
           value={value}
           onChange={(e) => onChange(e)}
         />

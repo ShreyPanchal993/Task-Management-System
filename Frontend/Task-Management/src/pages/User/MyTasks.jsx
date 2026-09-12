@@ -50,7 +50,7 @@ const MyTasks = () => {
 
   useEffect(() => {
     getAllTasks();
-    return () => {};
+    return () => { };
   }, [filterStatus]);
 
   return (
@@ -81,7 +81,7 @@ const MyTasks = () => {
             >
               <LuClipboardList className="text-2xl text-primary" />
             </div>
-            <h3 className="text-base font-semibold text-slate-700">No tasks assigned yet</h3>
+            <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">No tasks assigned yet</h3>
             <p className="text-sm text-slate-400 mt-1">Tasks assigned to you will appear here.</p>
           </div>
         ) : allTasks.length === 0 ? (
@@ -92,11 +92,11 @@ const MyTasks = () => {
             >
               <LuClipboardList className="text-2xl text-primary" />
             </div>
-            <h3 className="text-base font-semibold text-slate-700">No tasks in this status</h3>
+            <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">No tasks in this status</h3>
             <p className="text-sm text-slate-400 mt-1">Try a different filter.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
             {allTasks.map((item, index) => (
               <div
                 key={item._id}

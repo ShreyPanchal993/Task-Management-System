@@ -7,6 +7,7 @@ import { UserContext } from "../../context/userContext.jsx";
 import useServerStatus from "../../utils/useServerStatus.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,42 +21,42 @@ const Login = () => {
   useServerStatus(); // Silently pre-warms the backend + pre-fetches CSRF token
 
   const handleLogin = async (e) => {
-      e.preventDefault();
+    e.preventDefault();
 
-      if (!validateEmail(email)) {
-        setError("Please enter a valid email address.");
-        return;
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!password) {
+      setError("Please enter the password.");
+      return;
+    }
+
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+        email,
+        password,
+      });
+
+      const { user } = response.data.data;
+
+      if (user) {
+        updateUser(user);
+        navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
       }
-
-      if (!password) {
-        setError("Please enter the password.");
-        return;
-      }
-
-      setError("");
-      setIsLoading(true);
-
-      try{
-        const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
-          email,
-          password,
-        });
-
-        const { user } = response.data.data;
-
-        if (user) {
-          updateUser(user);
-          navigate(user.role === "admin" || user.role === "super_admin" ? "/admin/dashboard" : "/user/dashboard");
-        }
-      }catch (loginError) {
-        const message =
-          loginError.response?.data?.message ||
-          loginError.message ||
-          "Something went wrong. Please try again later.";
-        setError(message);
-      } finally {
-        setIsLoading(false);
-      }
+    } catch (loginError) {
+      const message =
+        loginError.response?.data?.message ||
+        loginError.message ||
+        "Something went wrong. Please try again later.";
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -99,25 +100,26 @@ const Login = () => {
 
           <div className="auth-form-panel flex items-center">
             <div className="w-full max-w-md mx-auto">
-              <div className="mb-7 flex justify-start">
+              <div className="mb-7 flex items-center justify-between">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:-translate-x-0.5 hover:text-slate-900"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 transition hover:-translate-x-0.5 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 shadow-sm">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm">
                     <LuArrowLeft className="text-base" />
                   </span>
                   Back to Home
                 </Link>
+                <ThemeToggle />
               </div>
 
               <p className="soft-label">Welcome Back</p>
-              <h3 className="text-3xl font-semibold text-slate-900 mt-2">Sign In</h3>
-              <p className="text-slate-500 mt-2 mb-5">Enter your credentials to access your workspace.</p>
+              <h3 className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">Sign In</h3>
+              <p className="text-slate-500 dark:text-slate-400 mt-2 mb-5">Enter your credentials to access your workspace.</p>
 
               <form onSubmit={handleLogin} className="space-y-3.5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
                   <input
                     className="form-input mt-0"
                     placeholder="you@company.com"
@@ -128,7 +130,7 @@ const Login = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password</label>
                   <div className="password-input-shell mt-0">
                     <input
                       className="form-input password-input mt-0"
@@ -149,7 +151,7 @@ const Login = () => {
                 </div>
 
                 {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                     {error}
                   </div>
                 )}
@@ -158,7 +160,7 @@ const Login = () => {
                   {isLoading ? "Signing In..." : "Sign In"}
                 </button>
 
-                <p className="text-center text-sm text-slate-600">
+                <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                   Don't have an account?{" "}
                   <Link className="text-primary font-semibold hover:underline" to="/signUp">
                     Create Account

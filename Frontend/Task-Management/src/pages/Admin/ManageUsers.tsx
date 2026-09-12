@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/layouts/DashboardLayout'
 import axiosInstance from '../../utils/axiosInstance';
 import { API_PATHS } from '../../utils/apiPaths';
@@ -9,6 +10,7 @@ import toast from 'react-hot-toast';
 import { UserContext } from '../../context/userContext';
 
 const ManageUsers = () => {
+  const navigate = useNavigate();
   const { user: currentUser, updateUser } = useContext(UserContext);
   const [allUsers, setAllUsers] = useState([]);
   const [roleUpdateId, setRoleUpdateId] = useState(null);
@@ -77,24 +79,35 @@ const ManageUsers = () => {
     }
   };
 
+  const handleStatClick = (user, status) => {
+    const params = new URLSearchParams({
+      userId: user._id,
+      userName: user.name || "Member",
+      status: status,
+    });
+    navigate(`/admin/tasks?${params.toString()}`);
+  };
+
   useEffect(() => {
     getAllUsers();
-    return () => {};
+    return () => { };
   }, []);
 
   return (
     <DashboardLayout activeMenu="Team Members">
       <div className="mt-5 mb-10 animate-slide-down">
         <div className="page-header">
-          <div>
-            <p className="soft-label">People</p>
-            <h2 className="page-title mt-2">Team Members</h2>
-          </div>
+          <div className="flex items-center justify-between gap-3 w-full">
+            <div>
+              <p className="soft-label">People</p>
+              <h2 className="page-title mt-2">Team Members</h2>
+            </div>
 
-          <button className="flex download-btn" onClick={handleDownloadReport}>
-            <LuFileSpreadsheet className="text-lg" />
-            Download Report
-          </button>
+            <button className="download-btn" onClick={handleDownloadReport}>
+              <LuFileSpreadsheet className="text-lg" />
+              <span className="hidden sm:inline">Download </span>Report
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -107,11 +120,11 @@ const ManageUsers = () => {
             >
               <LuUsers className="text-2xl text-primary" />
             </div>
-            <h3 className="text-base font-semibold text-slate-700">No team members yet</h3>
+            <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200">No team members yet</h3>
             <p className="text-sm text-slate-400 mt-1">Members will appear here once they sign up.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
             {allUsers.map((teamMember, index) => (
               <div
                 key={teamMember._id}
@@ -123,6 +136,7 @@ const ManageUsers = () => {
                   canManageRoles={currentUser?.role === "super_admin"}
                   isUpdatingRole={roleUpdateId === teamMember._id}
                   onRoleChange={handleRoleChange}
+                  onStatClick={(user, status) => handleStatClick(user, status)}
                 />
               </div>
             ))}

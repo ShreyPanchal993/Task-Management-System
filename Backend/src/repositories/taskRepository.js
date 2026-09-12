@@ -1,9 +1,15 @@
+import mongoose from "mongoose";
 import Task from "../models/Task.js";
 import { TASK_STATUS, TASK_PRIORITIES } from "../constants/constants.js";
 import { canManageAllTasks } from "../utils/taskHelpers.js";
 const taskListPopulate = { path: "assignedTo", select: "name email profilePicture" };
-const buildTaskVisibilityFilter = (user, filter = {}) =>
-    canManageAllTasks(user) ? filter : { ...filter, assignedTo: user._id };
+const buildTaskVisibilityFilter = (user, filter = {}) => {
+    const base = canManageAllTasks(user) ? { ...filter } : { ...filter, assignedTo: user._id };
+    if (base.assignedTo && typeof base.assignedTo === "string" && mongoose.Types.ObjectId.isValid(base.assignedTo)) {
+        base.assignedTo = new mongoose.Types.ObjectId(base.assignedTo);
+    }
+    return base;
+};
 const buildTaskStatusSummary = (statusCounts = []) => {
     const countMap = statusCounts.reduce((acc, statusItem) => {
         acc[statusItem._id] = statusItem.count;
@@ -20,7 +26,15 @@ const buildTaskStatusSummary = (statusCounts = []) => {
 
 const getTasks = async (user, filter = {}) => { 
     const baseFilter = buildTaskVisibilityFilter(user, filter);
-    const summaryFilter = canManageAllTasks(user) ? {} : { assignedTo: user._id };
+    let summaryFilter = canManageAllTasks(user) ? {} : { assignedTo: user._id };
+
+    if (canManageAllTasks(user) && filter.assignedTo) {
+        summaryFilter = {
+            assignedTo: mongoose.Types.ObjectId.isValid(filter.assignedTo)
+                ? new mongoose.Types.ObjectId(filter.assignedTo)
+                : filter.assignedTo
+        };
+    }
 
     const [tasksRaw, statusCounts] = await Promise.all([
         Task.find(baseFilter).populate(taskListPopulate).lean(),
