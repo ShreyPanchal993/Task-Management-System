@@ -38,17 +38,17 @@ const TaskCard = ({
 
     const getStatusTagColor = (s) => {
         switch (s) {
-            case "In Progress": return "text-sky-700 bg-sky-100/70 border border-sky-200";
-            case "Completed":   return "text-emerald-700 bg-emerald-100/70 border border-emerald-200";
-            default:            return "text-amber-700 bg-amber-100/70 border border-amber-200";
+            case "In Progress": return "text-sky-700 dark:text-sky-300 bg-sky-100/70 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800";
+            case "Completed": return "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800";
+            default: return "text-amber-700 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800";
         }
     };
 
     const getPriorityTagColor = () => {
         switch (priority) {
-            case "Low":    return "text-emerald-700 bg-emerald-100/70 border border-emerald-200";
-            case "Medium": return "text-amber-700 bg-amber-100/70 border border-amber-200";
-            case "High":   return "text-rose-700 bg-rose-100/70 border border-rose-200";
+            case "Low": return "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800";
+            case "Medium": return "text-amber-700 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800";
+            case "High": return "text-rose-700 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800";
         }
     };
 
@@ -80,11 +80,11 @@ const TaskCard = ({
 
     return (
         <div
-            className="rounded-[26px] py-4 border cursor-pointer hover:-translate-y-1 transition-transform"
+            className="rounded-[26px] py-4 border cursor-pointer hover:-translate-y-1 transition-all"
             style={{
-                background: "linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 253, 248, 0.82) 100%)",
-                borderColor: isOverdue ? "rgba(239,68,68,0.35)" : "var(--border-soft)",
-                boxShadow: "0 18px 36px rgba(15, 23, 42, 0.08)",
+                background: "var(--card-bg)",
+                borderColor: isOverdue ? "rgba(239,68,68,0.45)" : "var(--border-soft)",
+                boxShadow: "var(--shadow-soft)",
             }}
             onClick={onClick}
         >
@@ -92,7 +92,7 @@ const TaskCard = ({
                 {/* Admin: inline status selector; Member: static badge */}
                 {isAdmin && _id ? (
                     <select
-                        className={`text-[11px] font-semibold ${getStatusTagColor(status)} px-3 py-1 rounded-full border-0 outline-none cursor-pointer appearance-none`}
+                        className={`text-[11px] font-semibold ${getStatusTagColor(status)} px-3 py-1 rounded-full border-0 outline-none cursor-pointer appearance-none dark:bg-slate-900`}
                         value={status}
                         onChange={handleStatusChange}
                         onClick={(e) => e.stopPropagation()}
@@ -114,24 +114,23 @@ const TaskCard = ({
                 </div>
 
                 {isOverdue && (
-                    <div className="flex items-center gap-1 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/60 px-3 py-1 rounded-full">
                         <LuAlarmClock className="text-xs" /> Overdue
                     </div>
                 )}
             </div>
 
-            <div className={`px-4 border-l-[3px] ${
-                status === "In Progress"
+            <div className={`px-4 border-l-[3px] ${status === "In Progress"
                     ? "border-sky-500"
                     : status === "Completed"
-                    ? "border-emerald-500"
-                    : "border-violet-500"
-            }`}>
-                <p className="text-sm font-semibold text-slate-900 mt-4 line-clamp-2">{title}</p>
-                <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-[18px]">{description}</p>
-                <p className="text-[13px] text-slate-600 font-medium mt-3 mb-2 leading-[18px]">
+                        ? "border-emerald-500"
+                        : "border-violet-500"
+                }`}>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mt-4 line-clamp-2">{title}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-[18px]">{description}</p>
+                <p className="text-[13px] text-slate-600 dark:text-slate-300 font-medium mt-3 mb-2 leading-[18px]">
                     Task Done:{" "}
-                    <span className="font-semibold text-slate-900">
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">
                         {completedTodoCount} / {todoChecklist?.length || 0}
                     </span>
                 </p>
@@ -141,14 +140,14 @@ const TaskCard = ({
             <div className="px-4">
                 <div className="flex items-center justify-between my-1">
                     <div>
-                        <label className="text-xs text-slate-500">Start Date</label>
-                        <p className="text-[13px] font-semibold text-slate-900">
+                        <label className="text-xs text-slate-500 dark:text-slate-400">Start Date</label>
+                        <p className="text-[13px] font-semibold text-slate-900 dark:text-slate-100">
                             {moment(createdAt).format("DD MMM YYYY")}
                         </p>
                     </div>
                     <div>
-                        <label className="text-xs text-slate-500">Due Date</label>
-                        <p className={`text-[13px] font-semibold ${isOverdue ? "text-red-600" : "text-slate-900"}`}>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">Due Date</label>
+                        <p className={`text-[13px] font-semibold ${isOverdue ? "text-red-600 dark:text-red-400" : "text-slate-900 dark:text-slate-100"}`}>
                             {moment(dueDate).format("DD MMM YYYY")}
                         </p>
                     </div>
@@ -160,10 +159,10 @@ const TaskCard = ({
                     {attachmentCount > 0 && (
                         <div
                             className="flex items-center gap-2 px-2.5 py-1.5 rounded-full border"
-                            style={{ background: "rgba(40, 80, 217, 0.08)", borderColor: "rgba(40, 80, 217, 0.12)" }}
+                            style={{ background: "rgba(40, 80, 217, 0.08)", borderColor: "var(--border-soft)" }}
                         >
                             <LuPaperclip className="text-primary" />
-                            <span className="text-xs text-slate-900 font-medium">{attachmentCount}</span>
+                            <span className="text-xs text-slate-900 dark:text-slate-100 font-medium">{attachmentCount}</span>
                         </div>
                     )}
                 </div>

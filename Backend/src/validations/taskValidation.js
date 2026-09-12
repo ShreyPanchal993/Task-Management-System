@@ -24,6 +24,7 @@ export const getTasksQuerySchema = {
             .valid("Pending", "In Progress", "Completed")
             .empty("")
             .optional(),
+        assignedTo: objectIdSchema.optional(),
     }),
 };
 

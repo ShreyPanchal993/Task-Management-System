@@ -11,6 +11,7 @@ import { API_PATHS } from '../../utils/apiPaths';
 import uploadImage from '../../utils/uploadImage';
 import Avatar from '../Avatar';
 import { extractS3Key } from '../../utils/helper';
+import ThemeToggle from '../ThemeToggle';
 
 const Navbar = ({ activeMenu }) => {
     const [openSideMenu, setOpenSideMenu] = useState(false);
@@ -153,16 +154,10 @@ const Navbar = ({ activeMenu }) => {
 
     return (
         <>
-            <header
-                className="flex items-center justify-between gap-3 border-b px-4 py-3.5 md:px-7 sticky top-0 z-30 backdrop-blur-xl"
-                style={{
-                    background: 'rgba(248, 244, 236, 0.82)',
-                    borderColor: 'rgba(148, 163, 184, 0.14)',
-                }}
-            >
+            <header className="app-header sticky top-0 z-30 flex items-center justify-between px-3 sm:px-4 md:px-7 py-3 border-b backdrop-blur-xl">
                 <div className="flex items-center gap-3 md:gap-5">
                     <button
-                        className="flex lg:hidden text-slate-700 p-1.5 -ml-1 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
+                        className="flex lg:hidden text-slate-700 dark:text-slate-200 p-1.5 -ml-1 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
                         onClick={() => setOpenSideMenu(!openSideMenu)}
                         aria-label={openSideMenu ? "Close navigation menu" : "Open navigation menu"}
                     >
@@ -171,21 +166,22 @@ const Navbar = ({ activeMenu }) => {
 
                     <div>
                         <p className="soft-label hidden md:block">Workspace</p>
-                        <h2 className="text-lg font-semibold tracking-tight text-slate-900">Trackora</h2>
+                        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">Trackora</h2>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 md:gap-4">
+                    <ThemeToggle />
+
                     <div className="hidden md:block text-right">
-                        <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-                        <p className="text-xs text-slate-500">{activeMenu}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{user?.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{activeMenu}</p>
                     </div>
 
                     <button
                         onClick={openProfileModal}
-                        className="w-10 h-10 md:w-11 md:h-11 rounded-full overflow-hidden border-2 shadow-md hover:-translate-y-0.5 transition-transform cursor-pointer"
+                        className="w-10 h-10 md:w-11 md:h-11 rounded-full overflow-hidden border-2 shadow-md hover:-translate-y-0.5 transition-transform cursor-pointer border-blue-500/30"
                         style={{
-                            borderColor: 'rgba(40, 80, 217, 0.24)',
                             boxShadow: '0 8px 18px rgba(15, 23, 42, 0.1)',
                         }}
                     >
@@ -194,7 +190,7 @@ const Navbar = ({ activeMenu }) => {
                             name={user?.name}
                             alt="Profile"
                             className="w-full h-full object-cover"
-                            fallbackClassName="flex h-full w-full items-center justify-center bg-slate-200 text-sm font-semibold text-slate-600"
+                            fallbackClassName="flex h-full w-full items-center justify-center bg-slate-200 dark:bg-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300"
                         />
                     </button>
                 </div>
@@ -202,46 +198,41 @@ const Navbar = ({ activeMenu }) => {
 
             {/* Mobile Drawer Backdrop */}
             <div
-                className={`fixed inset-0 bg-slate-950/45 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${
-                    openSideMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-                }`}
+                className={`fixed inset-0 bg-slate-950/45 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300 ${openSideMenu ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                    }`}
                 onClick={() => setOpenSideMenu(false)}
                 aria-hidden="true"
             />
 
             {/* Mobile Off-canvas Slide Drawer */}
             <aside
-                className={`fixed top-0 bottom-0 left-0 z-50 w-72 max-w-[85vw] flex flex-col lg:hidden transition-transform duration-300 ease-out shadow-2xl ${
-                    openSideMenu ? 'translate-x-0' : '-translate-x-full'
-                }`}
-                style={{
-                    background: 'linear-gradient(180deg, #fffdf8 0%, #fbf8f2 100%)',
-                    borderRight: '1px solid rgba(148, 163, 184, 0.18)',
-                    boxShadow: '0 25px 60px rgba(15, 23, 42, 0.22)',
-                }}
+                className={`mobile-drawer-panel fixed top-0 bottom-0 left-0 z-50 w-72 max-w-[85vw] flex flex-col lg:hidden transition-transform duration-300 ease-out shadow-2xl ${openSideMenu ? 'translate-x-0' : '-translate-x-full'
+                    }`}
                 aria-label="Mobile Navigation"
             >
                 {/* Mobile Drawer Header */}
                 <div
-                    className="flex items-center justify-between px-5 py-4 border-b shrink-0"
-                    style={{ borderColor: 'rgba(148, 163, 184, 0.14)' }}
+                    className="flex items-center justify-between px-5 py-4 border-b shrink-0 soft-divider"
                 >
                     <div>
                         <p className="soft-label">Workspace</p>
-                        <h2 className="text-base font-semibold tracking-tight text-slate-900">Trackora</h2>
+                        <h2 className="text-base font-semibold tracking-tight text-slate-900 dark:text-slate-100">Trackora</h2>
                     </div>
 
-                    <button
-                        onClick={() => setOpenSideMenu(false)}
-                        className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/60 hover:text-slate-900 transition-colors cursor-pointer"
-                        aria-label="Close menu"
-                    >
-                        <HiOutlineX className="text-xl" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <button
+                            onClick={() => setOpenSideMenu(false)}
+                            className="w-9 h-9 flex items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+                            aria-label="Close menu"
+                        >
+                            <HiOutlineX className="text-xl" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile Drawer Menu Content */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto flex flex-col">
                     <SideMenu
                         activeMenu={activeMenu}
                         isCollapsed={false}
@@ -289,16 +280,11 @@ const Navbar = ({ activeMenu }) => {
                                 setShowPasswordSection(!showPasswordSection);
                                 setPasswordError('');
                             }}
-                            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border cursor-pointer"
-                            style={{
-                                background: 'rgba(248, 244, 236, 0.72)',
-                                borderColor: 'rgba(148, 163, 184, 0.14)',
-                            }}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border cursor-pointer bg-slate-100/70 dark:bg-slate-800/70 border-slate-200/80 dark:border-slate-700/80"
                         >
                             <div className="flex items-center gap-3">
                                 <div
-                                    className="w-8 h-8 rounded-xl flex items-center justify-center"
-                                    style={{ background: 'rgba(40, 80, 217, 0.12)' }}
+                                    className="w-8 h-8 rounded-xl flex items-center justify-center bg-primary/10 dark:bg-primary/20"
                                 >
                                     <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -306,13 +292,13 @@ const Navbar = ({ activeMenu }) => {
                                 </div>
 
                                 <div className="text-left">
-                                    <p className="text-sm font-medium text-gray-800">Change Password</p>
-                                    <p className="text-xs text-gray-400">Update your account password</p>
+                                    <p className="text-sm font-medium text-slate-800 dark:text-slate-100">Change Password</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-400">Update your account password</p>
                                 </div>
                             </div>
 
                             <svg
-                                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showPasswordSection ? 'rotate-180' : ''}`}
+                                className={`w-4 h-4 text-slate-400 dark:text-slate-400 transition-transform duration-200 ${showPasswordSection ? 'rotate-180' : ''}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
