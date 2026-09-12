@@ -1,47 +1,77 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { LuX } from 'react-icons/lu'
 
 const Modal = ({ children, isOpen, onClose, title }) => {
-    if (!isOpen) return;
+    // Lock body scroll and listen for Escape key when modal is open
+    useEffect(() => {
+        if (!isOpen) return;
 
-    return (
-        <div className="fixed inset-0 z-50 flex justify-center items-center w-full overflow-y-auto overflow-x-hidden bg-slate-950/25 backdrop-blur-sm p-4">
-            <div className="relative p-4 w-full max-w-2xl max-h-full">
-                <div className="relative rounded-[28px] border shadow-2xl" style={{ background: "linear-gradient(180deg, rgba(255, 253, 248, 0.96) 0%, rgba(255, 255, 255, 0.84) 100%)", borderColor: "var(--border-soft)" }}>
-                    <div className="flex items-center justify-between p-4 md:p-5 border-b soft-divider">
-                        <h3 className="text-lg font-medium text-gray-900">
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose?.();
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.body.style.overflow = originalOverflow;
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return createPortal(
+        <div
+            className="fixed inset-0 z-[100] flex justify-center items-center p-4 overflow-y-auto overflow-x-hidden animate-fade-in"
+            style={{
+                background: "rgba(30, 41, 59, 0.16)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
+            }}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose?.();
+            }}
+            role="dialog"
+            aria-modal="true"
+        >
+            <div className="relative w-full max-w-xl max-h-[90vh] flex flex-col animate-scale-in">
+                <div
+                    className="relative rounded-[28px] border shadow-[0_24px_60px_rgba(15,23,42,0.16)] flex flex-col max-h-[90vh] overflow-hidden"
+                    style={{
+                        background: "var(--modal-bg)",
+                        borderColor: "var(--border-soft)",
+                    }}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b soft-divider shrink-0">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 tracking-tight">
                             {title}
                         </h3>
 
-                        <button 
+                        <button
                             type="button"
-                            className="text-gray-400 bg-transparent hover:bg-white hover:text-gray-900 rounded-full text-sm w-8 h-8 inline-flex justify-center items-center cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition cursor-pointer"
                             onClick={onClose}
+                            aria-label="Close"
                         >
-                            <svg
-                                className="w-3 h-3"
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 14 14"
-                            >
-                                <path
-                                    stroke="currentColor"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                                />
-                            </svg>
+                            <LuX className="text-lg" />
                         </button>
                     </div>
 
-                    <div className="p-4 md:p-5 space-y-4">
+                    {/* Body */}
+                    <div className="p-5 sm:p-6 overflow-y-auto custom-scrollbar flex-1">
                         {children}
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
-}
+};
 
 export default Modal
+
