@@ -13,9 +13,12 @@ const getTasks = async (req, res) => {
     const filter = {};
 
     try {
-        const { status } = req.validated?.query || req.query;
+        const { status, assignedTo } = req.validated?.query || req.query;
         if (status) {
             filter.status = status;
+        }
+        if (assignedTo) {
+            filter.assignedTo = assignedTo;
         }
 
         const tasks = await taskService.getTasks(req.user, filter);

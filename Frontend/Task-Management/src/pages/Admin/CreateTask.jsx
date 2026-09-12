@@ -236,7 +236,7 @@ const CreateTask = () => {
 
               {taskId && (
                 <button
-                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-700 bg-rose-100/70 rounded-full px-4 py-2 border border-rose-200 hover:border-rose-300 hover:bg-rose-100 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 text-[13px] font-medium text-rose-700 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/40 rounded-full px-4 py-2 border border-rose-200 dark:border-rose-800 hover:border-rose-300 dark:hover:border-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors cursor-pointer"
                   onClick={() => setOpenDeleteAlert(true)}
                 >
                   <LuTrash2 className="text-base" /> Delete
@@ -245,7 +245,7 @@ const CreateTask = () => {
             </div>
 
             <div className="mt-6">
-              <label className="text-sm font-medium text-slate-700">Task Title</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Task Title</label>
               <input
                 placeholder="Create App UI"
                 className="form-input mt-1.5"
@@ -255,7 +255,7 @@ const CreateTask = () => {
             </div>
 
             <div className="mt-5">
-              <label className="text-sm font-medium text-slate-700">Description</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>
               <textarea
                 placeholder="Describe Task"
                 className="form-input mt-1.5"
@@ -267,7 +267,7 @@ const CreateTask = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
               <div>
-                <label className="text-sm font-medium text-slate-700">Priority</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Priority</label>
                 <SelectDropDown
                   options={PRIORITY_DATA}
                   value={taskData.priority}
@@ -277,11 +277,11 @@ const CreateTask = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Due Date</label>
-                <div className="relative mt-1.5">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Due Date</label>
+                <div className="relative w-full mt-2">
                   <input
                     placeholder="DD/MM/YYYY"
-                    className="form-input pr-12"
+                    className="form-input !mt-0 h-[50px] pr-12"
                     value={taskData.dueDate}
                     onChange={({ target }) =>
                       handleValueChange("dueDate", formatDueDateForInput(target.value))
@@ -293,7 +293,7 @@ const CreateTask = () => {
                   <button
                     type="button"
                     onClick={openDatePicker}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
                     aria-label="Open date picker"
                   >
                     <LuCalendarDays className="text-lg" />
@@ -319,7 +319,7 @@ const CreateTask = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Assign To</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Assign To</label>
                 <SelectUsers
                   selectedUsers={taskData.assignedTo}
                   setSelectedUsers={(value) => handleValueChange("assignedTo", value)}
@@ -328,7 +328,7 @@ const CreateTask = () => {
             </div>
 
             <div className="mt-5">
-              <label className="text-sm font-medium text-slate-700">TODO Checklist</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">TODO Checklist</label>
               <TodoListInput
                 todoList={taskData?.todoChecklist}
                 setTodoList={(value) => handleValueChange("todoChecklist", value)}
@@ -336,7 +336,7 @@ const CreateTask = () => {
             </div>
 
             <div className="mt-5">
-              <label className="text-sm font-medium text-slate-700">Add Attachments</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Add Attachments</label>
               <AddAttachmentsInputs
                 attachments={taskData?.attachments}
                 setAttachments={(value) => handleValueChange("attachments", value)}
@@ -381,7 +381,7 @@ const CreateTask = () => {
         onClose={cancelLeave}
         title="Unsaved Changes"
       >
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
         </p>
         <div className="flex justify-end gap-3 mt-6">
@@ -394,7 +394,7 @@ const CreateTask = () => {
           </button>
           <button
             type="button"
-            className="flex items-center justify-center gap-1.5 text-sm font-semibold text-rose-700 bg-rose-100/80 border border-rose-200 rounded-full px-5 py-2"
+            className="flex items-center justify-center gap-1.5 text-sm font-semibold text-rose-700 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-full px-5 py-2 cursor-pointer hover:bg-rose-200/80 dark:hover:bg-rose-900/50 transition-colors"
             onClick={confirmLeave}
           >
             Leave anyway
