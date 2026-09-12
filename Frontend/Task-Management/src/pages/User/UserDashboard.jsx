@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState }  from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../../hooks/useUserAuth";
 import { UserContext } from "../../context/userContext";
@@ -20,7 +20,7 @@ const COLORS = ["#8D51FF", "#00B8DB", "#7BCE00"];
 const UserDashboard = () => {
   useUserAuth(); // Custom hook to check user authentication
 
-  const {user} = useContext(UserContext);
+  const { user } = useContext(UserContext);
 
   const navigate = useNavigate();
 
@@ -63,7 +63,7 @@ const UserDashboard = () => {
       setLoading(true);
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_USER_DASHBOARD_DATA);
       if (response.data?.data) {
-        setDashboardData(response.data.data); 
+        setDashboardData(response.data.data);
         prepareChartData(response.data.data?.charts || null);
       }
     } catch (error) {
@@ -80,106 +80,106 @@ const UserDashboard = () => {
   useEffect(() => {
     getDashboardData();
 
-    return () => {};
+    return () => { };
   }, []);
 
-  return(
+  return (
     <DashboardLayout activeMenu={"Dashboard"}>
       {loading ? <LoadingSpinner /> : (
-      <>
-      <div className="card my-5 animate-slide-up stagger-1">
-        <div className="page-header mb-0">
-          <div className="col-span-3"> 
-            <p className="soft-label">Personal Dashboard</p>
-            <h2 className="page-title mt-2">{getGreeting()}, {user?.name}</h2>
-            <p className="page-subtitle mt-2">
-              {moment().format("dddd Do MMMM YYYY")}
-            </p>
-          </div>
+        <>
+          <div className="card my-5 animate-slide-up stagger-1">
+            <div className="page-header mb-0">
+              <div className="col-span-3">
+                <p className="soft-label">Personal Dashboard</p>
+                <h2 className="page-title mt-2">{getGreeting()}, {user?.name}</h2>
+                <p className="page-subtitle mt-2">
+                  {moment().format("dddd Do MMMM YYYY")}
+                </p>
+              </div>
 
-          <div className="rounded-[24px] border px-4 py-3 text-sm text-slate-600" style={{ background: "rgba(255,255,255,0.58)", borderColor: "var(--border-soft)" }}>
-            Track assigned work, priorities, and completion trends.
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-5">
-          <InfoCard
-            label="Total Tasks"
-            value={addThousandSeparator(
-              dashboardData?.charts?.taskDistribution?.All || 0
-            )}
-            color="bg-primary"
-          />
-
-          <InfoCard
-            label="Pending Tasks"
-            value={addThousandSeparator(
-              dashboardData?.charts?.taskDistribution?.Pending || 0
-            )}
-            color="bg-violet-500"
-          />
-
-          <InfoCard
-            label="In Progress Tasks"
-            value={addThousandSeparator(
-              dashboardData?.charts?.taskDistribution?.InProgress || 0
-            )}
-            color="bg-cyan-500"
-          />
-
-          <InfoCard
-            label="Completed Tasks"
-            value={addThousandSeparator(
-              dashboardData?.charts?.taskDistribution?.Completed || 0
-            )}
-            color="bg-lime-500"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4 md:my-6">
-        <div className="animate-slide-up stagger-2">
-          <div className="card">
-            <div className="flex items-center justify-between">
-              <h5 className="font-semibold text-slate-900">Task Distribution</h5>
+              <div className="rounded-[24px] border px-4 py-3 text-sm text-slate-600 dark:text-slate-300" style={{ background: "var(--surface-1)", borderColor: "var(--border-soft)" }}>
+                Track assigned work, priorities, and completion trends.
+              </div>
             </div>
 
-            <CustomPieChart 
-              data={pieChartData}
-              colors={COLORS}
-            />
-          </div>
-        </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-5">
+              <InfoCard
+                label="Total Tasks"
+                value={addThousandSeparator(
+                  dashboardData?.charts?.taskDistribution?.All || 0
+                )}
+                color="bg-primary"
+              />
 
-        <div className="animate-slide-up stagger-3">
-          <div className="card">
-            <div className="flex items-center justify-between">
-              <h5 className="font-semibold text-slate-900">Task Priority Levels</h5>
+              <InfoCard
+                label="Pending Tasks"
+                value={addThousandSeparator(
+                  dashboardData?.charts?.taskDistribution?.Pending || 0
+                )}
+                color="bg-violet-500"
+              />
+
+              <InfoCard
+                label="In Progress Tasks"
+                value={addThousandSeparator(
+                  dashboardData?.charts?.taskDistribution?.InProgress || 0
+                )}
+                color="bg-cyan-500"
+              />
+
+              <InfoCard
+                label="Completed Tasks"
+                value={addThousandSeparator(
+                  dashboardData?.charts?.taskDistribution?.Completed || 0
+                )}
+                color="bg-lime-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4 md:my-6">
+            <div className="animate-slide-up stagger-2">
+              <div className="card">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-semibold text-slate-900 dark:text-slate-100">Task Distribution</h5>
+                </div>
+
+                <CustomPieChart
+                  data={pieChartData}
+                  colors={COLORS}
+                />
+              </div>
             </div>
 
-            <CustomBarChart 
-              data={barChartData}
-            />
-          </div>
-        </div>
-      </div>
+            <div className="animate-slide-up stagger-3">
+              <div className="card">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-semibold text-slate-900 dark:text-slate-100">Task Priority Levels</h5>
+                </div>
 
-
-      <div className="w-full my-4 md:my-6">
-        <div className="animate-slide-up stagger-4">
-          <div className="card">
-            <div className="flex items-center justify-between">
-              <h5 className="text-lg font-semibold text-slate-900">Recent Tasks</h5>
-              <button className="card-btn" onClick={onSeeMore}>
-                See All <LuArrowRight className="text-base" />
-              </button>
+                <CustomBarChart
+                  data={barChartData}
+                />
+              </div>
             </div>
-
-            <TaskListTable tableData={dashboardData?.recentTasks || []} />
           </div>
-        </div>
-      </div>
-      </>
+
+
+          <div className="w-full my-4 md:my-6">
+            <div className="animate-slide-up stagger-4">
+              <div className="card">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Recent Tasks</h5>
+                  <button className="card-btn" onClick={onSeeMore}>
+                    See All <LuArrowRight className="text-base" />
+                  </button>
+                </div>
+
+                <TaskListTable tableData={dashboardData?.recentTasks || []} />
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </DashboardLayout>
   )

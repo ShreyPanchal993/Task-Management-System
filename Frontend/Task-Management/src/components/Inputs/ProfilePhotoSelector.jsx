@@ -28,7 +28,7 @@ const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExist
             setImage(file);
             onRemoveExisting?.(false);
             const preview = URL.createObjectURL(file);
-            setPreviewUrl(preview); 
+            setPreviewUrl(preview);
         }
     };
 
@@ -51,7 +51,7 @@ const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExist
     };
 
     return <div className="flex justify-center mb-6">
-        <input 
+        <input
             type="file"
             accept="image/*"
             ref={inputRef}
@@ -60,9 +60,9 @@ const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExist
         />
 
         {!previewUrl ? (
-            <div className="w-20 h-20 flex items-center justify-center bg-blue-100/50 rounded-full relative cursor-pointer">
+            <div className="w-20 h-20 flex items-center justify-center bg-blue-100/50 dark:bg-blue-950/40 border border-blue-200/50 dark:border-blue-800/50 rounded-full relative cursor-pointer">
                 <LuUser className="text-4xl text-primary" />
-                <button 
+                <button
                     type="button"
                     className="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-full absolute -bottom-1 -right-1 cursor-pointer"
                     onClick={onChooseFile}
@@ -76,14 +76,14 @@ const ProfilePhotoSelector = ({ image, setImage, existingImageUrl, onRemoveExist
                     src={previewUrl}
                     name="Profile Photo"
                     alt="profile photo"
-                    className="w-20 h-20 rounded-full object-cover"
-                    fallbackClassName="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100/50 text-primary"
+                    className="w-20 h-20 rounded-full object-cover ring-2 ring-white/60 dark:ring-slate-700"
+                    fallbackClassName="flex h-20 w-20 items-center justify-center rounded-full bg-blue-100/50 dark:bg-blue-950/40 text-primary"
                 />
-                    <button
-                        type="button"
-                        className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -bottom-1 -right-1"
-                        onClick={handleRemoveImage}
-                    >
+                <button
+                    type="button"
+                    className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -bottom-1 -right-1"
+                    onClick={handleRemoveImage}
+                >
                     <LuTrash />
                 </button>
             </div>

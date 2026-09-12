@@ -8,6 +8,7 @@ import useServerStatus from "../../utils/useServerStatus.js";
 import uploadImage from "../../utils/uploadImage.js";
 import { HiCheckCircle, HiUsers, HiClipboardList, HiChartBar } from 'react-icons/hi';
 import { LuArrowLeft, LuEye, LuEyeOff } from "react-icons/lu";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const getPasswordStrength = (pwd) => {
   if (!pwd) return null;
@@ -149,26 +150,27 @@ const SignUp = () => {
 
           <div className="auth-form-panel flex items-center">
             <div className="w-full max-w-md mx-auto">
-              <div className="mb-7 flex justify-start">
+              <div className="mb-7 flex items-center justify-between">
                 <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:-translate-x-0.5 hover:text-slate-900"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 transition hover:-translate-x-0.5 hover:text-slate-900 dark:hover:text-white"
                 >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/80 text-slate-600 shadow-sm">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-sm">
                     <LuArrowLeft className="text-base" />
                   </span>
                   Back to Home
                 </Link>
+                <ThemeToggle />
               </div>
 
               <p className="soft-label">Get Started</p>
-              <h3 className="text-3xl font-semibold text-slate-900 mt-2">Create Your Account</h3>
-              <p className="text-slate-500 mt-2 mb-5">Set up your profile and start organizing work.</p>
+              <h3 className="text-3xl font-semibold text-slate-900 dark:text-white mt-2">Create Your Account</h3>
+              <p className="text-slate-500 dark:text-slate-400 mt-2 mb-5">Set up your profile and start organizing work.</p>
 
               <form onSubmit={handleSignUp} className="space-y-3.5">
                 <div className="flex justify-center mb-4">
                   <div className="relative group">
-                    <div className="w-20 h-20 rounded-full border border-dashed border-slate-300 flex items-center justify-center overflow-hidden bg-white/70 shadow-sm">
+                    <div className="w-20 h-20 rounded-full border border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden bg-white/70 dark:bg-slate-800/70 shadow-sm">
                       {previewUrl ? (
                         <img src={previewUrl} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
@@ -183,7 +185,7 @@ const SignUp = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Full Name</label>
                   <input
                     className="form-input mt-0"
                     placeholder="John Doe"
@@ -194,7 +196,7 @@ const SignUp = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
                   <input
                     className="form-input mt-0"
                     placeholder="you@company.com"
@@ -205,7 +207,7 @@ const SignUp = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Password</label>
                   <div className="password-input-shell mt-0">
                     <input
                       className="form-input password-input mt-0"
@@ -227,16 +229,15 @@ const SignUp = () => {
                   {/* Password strength indicator */}
                   {password && passwordStrength && (
                     <div className="mt-2">
-                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                         <div
                           className={`h-full rounded-full transition-all duration-300 ${passwordStrength.color} ${passwordStrength.width}`}
                         />
                       </div>
-                      <p className={`text-xs mt-1 font-medium ${
-                        passwordStrength.label === "Strong" ? "text-emerald-600"
-                        : passwordStrength.label === "Fair" ? "text-yellow-600"
-                        : "text-red-500"
-                      }`}>
+                      <p className={`text-xs mt-1 font-medium ${passwordStrength.label === "Strong" ? "text-emerald-600 dark:text-emerald-400"
+                          : passwordStrength.label === "Fair" ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-500 dark:text-red-400"
+                        }`}>
                         {passwordStrength.label}
                         {passwordStrength.label !== "Strong" && " — min 8 chars, uppercase, number & symbol recommended"}
                       </p>
@@ -245,7 +246,7 @@ const SignUp = () => {
                 </div>
 
                 {error && (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  <div className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                     {error}
                   </div>
                 )}
@@ -254,7 +255,7 @@ const SignUp = () => {
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
 
-                <p className="text-center text-sm text-slate-600">
+                <p className="text-center text-sm text-slate-600 dark:text-slate-400">
                   Already have an account?{" "}
                   <Link className="text-primary font-semibold hover:underline" to="/login">
                     Sign In
