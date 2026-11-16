@@ -13,11 +13,11 @@ export const API_PATHS = {
     },
 
     IMAGE: {
-        UPLOAD_IMAGE: "/api/auth/upload-image",
-        GET_IMAGE: (key) => `/api/auth/image/${key}`,
-        DELETE_IMAGE: (key )=> `/api/auth/image/${key}`
+        UPLOAD_IMAGE: "/api/auth/upload-image", // Upload image API endpoint
+        GET_IMAGE: (key) => `/api/auth/image/${key}`, // Get signed URL for an image
+        DELETE_IMAGE: (key) => `/api/auth/image/${key}`, // Delete an image from storage
     },
-    
+
     USERS: {
         GET_ALL_USERS: "/api/users", // Get all users API endpoint (Admin only)
         GET_USER_BY_ID: (userId) => `/api/users/${userId}`, // Get user by ID API endpoint
@@ -35,7 +35,7 @@ export const API_PATHS = {
         CREATE_TASK: "/api/tasks", // Create task API endpoint (Admin only)
         UPDATE_TASK: (taskId) => `/api/tasks/${taskId}`, // Update task API endpoint
         DELETE_TASK: (taskId) => `/api/tasks/${taskId}`, // Delete task API endpoint
-    
+
         UPDATE_TASK_STATUS: (taskId) => `/api/tasks/${taskId}/status`, // Update task status API endpoint
         UPDATE_TODO_CHECKLIST: (taskId) => `/api/tasks/${taskId}/todo`, // Update task to-do checklist API endpoint
     },
@@ -43,11 +43,5 @@ export const API_PATHS = {
     REPORTS: {
         EXPORT_TASKS: "/api/reports/export/tasks", // Export tasks API endpoint
         EXPORT_USERS: "/api/reports/export/users", // Export users API endpoint
-    },
-
-    IMAGE: {
-        UPLOAD_IMAGE: "/api/auth/upload-image", // Upload image API endpoint
-        GET_IMAGE: (key) => `/api/auth/image/${key}`, // Get presigned URL for an S3 image
-        DELETE_IMAGE: (key) => `/api/auth/image/${key}`, // Delete an image from S3
     },
 };
