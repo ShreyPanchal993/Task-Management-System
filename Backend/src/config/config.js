@@ -1,18 +1,23 @@
 const config = {
-    aws: {
-        region: process.env.AWS_REGION,
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        bucketName: process.env.AWS_S3_BUCKET
-    },
-    mongodb: {
-        uri: process.env.MONGO_URI 
+    supabase: {
+        url: process.env.SUPABASE_URL,
+        serviceRoleKey:
+            process.env.SUPABASE_SERVICE_ROLE_KEY ||
+            process.env.SUPABASE_SECRET_KEY ||
+            process.env.SUPABASE_ANON_KEY ||
+            process.env.SUPABASE_KEY,
+        bucketName: process.env.SUPABASE_STORAGE_BUCKET || "profile-pictures",
     },
 
+    // Legacy typo alias for backwards compatibility
     supdabase: {
         url: process.env.SUPABASE_URL,
-        roleKey:process.env.SUPABASE_SERVICE_ROLE_KEY,
-        storageKey: process.env.SUPABASE_STORAGE_BUCKET
+        roleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        storageKey: process.env.SUPABASE_STORAGE_BUCKET || "profile-pictures",
+    },
+
+    mongodb: {
+        uri: process.env.MONGO_URI,
     },
 
     jwt: {
