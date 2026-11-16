@@ -18,9 +18,20 @@ const sanitizeProfilePicture = (value) => {
             parsedUrl.hostname.includes(".s3") &&
             parsedUrl.pathname.startsWith("/profile-pictures/");
 
-        return isS3ProfilePicture
-            ? decodeURIComponent(parsedUrl.pathname.slice(1))
-            : value;
+        if (isS3ProfilePicture) {
+            return decodeURIComponent(parsedUrl.pathname.slice(1));
+        }
+
+        const isSupabaseProfilePicture =
+            parsedUrl.hostname.endsWith(".supabase.co") &&
+            parsedUrl.pathname.includes("/profile-pictures/");
+
+        if (isSupabaseProfilePicture) {
+            const index = parsedUrl.pathname.indexOf("profile-pictures/");
+            return decodeURIComponent(parsedUrl.pathname.slice(index));
+        }
+
+        return value;
     } catch {
         return value;
     }

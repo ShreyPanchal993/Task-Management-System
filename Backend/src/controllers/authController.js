@@ -1,5 +1,5 @@
 import * as authService from "../services/authService.js";
-import * as s3storageService from "../services/s3storageService.js"
+import * as storageService from "../services/supabaseStorageService.js";
 import ApiSuccess from "../utils/ApiSuccess.js";
 import ApiError from "../utils/ApiError.js";
 import { clearAuthCookies, setAuthCookies } from "../utils/cookieOptions.js";
@@ -68,14 +68,14 @@ const uploadImage = async (req, res) => {
             return res.status(apiError.statusCode).json(apiError);
         }
 
-        const { key } = await s3storageService.uploadImageToS3(req.file);
+        const { key } = await storageService.uploadImageToSupabase(req.file);
 
         return ApiSuccess.ok(res, "Image uploaded successfully", { key });
     } catch (error) {
         const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
-}
+};
 
 const getImageUrl = async (req, res) => {
     try{
@@ -86,14 +86,14 @@ const getImageUrl = async (req, res) => {
             return res.status(apiError.statusCode).json(apiError);
         }
 
-        const preSignedUrl = await s3storageService.getPreSignedUrl(key);
+        const preSignedUrl = await storageService.getPreSignedUrl(key);
 
-        return ApiSuccess.ok(res, "Image fetched successfully", { url: preSignedUrl })
+        return ApiSuccess.ok(res, "Image fetched successfully", { url: preSignedUrl });
     } catch (error) {
-        const apiError = resolveApiError(error)
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
-}
+};
 
 const deleteImage = async (req, res) => {
     try{
@@ -101,17 +101,17 @@ const deleteImage = async (req, res) => {
 
         if (!key) {
             const apiError = ApiError.badRequest("Image filename is required");
-            return res.status(apiError.statusCode).json(apiError)
+            return res.status(apiError.statusCode).json(apiError);
         }
 
-        await s3storageService.deleteImageFromS3(key);
+        await storageService.deleteImageFromSupabase(key);
 
         return ApiSuccess.ok(res, "Image deleted successfully", { deleted: true });
     } catch (error) {
-        const apiError = resolveApiError(error)
+        const apiError = resolveApiError(error);
         return res.status(apiError.statusCode).json(apiError);
     }
-}
+};
 
 const getUserProfile = async (req, res) => {
     try{
